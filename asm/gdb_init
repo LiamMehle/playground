@@ -1,0 +1,5 @@
+layout regs
+
+focus cmd
+b _start
+r

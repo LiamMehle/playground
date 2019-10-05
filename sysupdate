@@ -1,0 +1,2 @@
+#! /bin/dash
+yes | yay -Syyuu && yes | yay -Rcs $(yay -Qdtq) && yes | yay -Scc

@@ -1,0 +1,4 @@
+layout regs
+focus cmd
+b main
+r
