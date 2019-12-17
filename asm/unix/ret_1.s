@@ -1,4 +1,4 @@
-
+# compile with gnu assembler
 .text
 .global _start
 _start:
