@@ -1,0 +1,110 @@
+	.file	"measure_latency.cpp"
+	.intel_syntax noprefix
+	.section	.text$_Z6cyclesv,"x"
+	.linkonce discard
+	.globl	__Z6cyclesv
+	.def	__Z6cyclesv;	.scl	2;	.type	32;	.endef
+__Z6cyclesv:
+LFB12:
+	.cfi_startproc
+	push	ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	mov	ebp, esp
+	.cfi_def_cfa_register 5
+	sub	esp, 16
+/APP
+ # 10 "measure_latency.cpp" 1
+	rdtsc
+
+ # 0 "" 2
+/NO_APP
+	mov	DWORD PTR [ebp-4], eax
+	mov	eax, DWORD PTR [ebp-4]
+	mov	edx, 0
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+LFE12:
+	.def	___main;	.scl	2;	.type	32;	.endef
+	.section .rdata,"dr"
+LC1:
+	.ascii "avg:%.2f\12max:%i\0"
+	.text
+	.globl	_main
+	.def	_main;	.scl	2;	.type	32;	.endef
+_main:
+LFB13:
+	.cfi_startproc
+	push	ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	mov	ebp, esp
+	.cfi_def_cfa_register 5
+	and	esp, -16
+	sub	esp, 64
+	call	___main
+	mov	DWORD PTR [esp+60], 0
+	mov	DWORD PTR [esp+56], 0
+	mov	DWORD PTR [esp+52], 0
+L7:
+	cmp	DWORD PTR [esp+52], 99999
+	jg	L4
+	call	__Z6cyclesv
+	mov	DWORD PTR [esp+48], eax
+/APP
+ # 20 "measure_latency.cpp" 1
+	fsin
+ # 0 "" 2
+/NO_APP
+	call	__Z6cyclesv
+	mov	DWORD PTR [esp+44], eax
+	mov	eax, DWORD PTR [esp+44]
+	sub	eax, DWORD PTR [esp+48]
+	mov	DWORD PTR [esp+40], eax
+	mov	eax, DWORD PTR [esp+60]
+	cmp	eax, DWORD PTR [esp+40]
+	jnb	L5
+	mov	eax, DWORD PTR [esp+40]
+	jmp	L6
+L5:
+	mov	eax, DWORD PTR [esp+60]
+L6:
+	mov	DWORD PTR [esp+60], eax
+	mov	eax, DWORD PTR [esp+40]
+	add	DWORD PTR [esp+56], eax
+	add	DWORD PTR [esp+52], 1
+	jmp	L7
+L4:
+	mov	eax, DWORD PTR [esp+56]
+	mov	edx, 0
+	mov	DWORD PTR [esp+16], eax
+	mov	DWORD PTR [esp+20], edx
+	fild	QWORD PTR [esp+16]
+	fstp	QWORD PTR [esp+24]
+	fld	QWORD PTR [esp+24]
+	fld	QWORD PTR LC0
+	fdivp	st(1), st
+	fstp	QWORD PTR [esp+32]
+	mov	eax, DWORD PTR [esp+60]
+	mov	DWORD PTR [esp+12], eax
+	fld	QWORD PTR [esp+32]
+	fstp	QWORD PTR [esp+4]
+	mov	DWORD PTR [esp], OFFSET FLAT:LC1
+	call	_printf
+	mov	eax, 0
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+LFE13:
+	.section .rdata,"dr"
+	.align 8
+LC0:
+	.long	0
+	.long	1090021888
+	.ident	"GCC: (MinGW.org GCC-6.3.0-1) 6.3.0"
+	.def	_printf;	.scl	2;	.type	32;	.endef
