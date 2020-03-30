@@ -84,22 +84,23 @@ int main() {
 	constexpr auto fps_target = 60;
 	constexpr auto ns = 1*1000*1000;
 	constexpr auto frame_time = 1/fps_target*ns;
+
+	glfwSwapInterval(0);
+
 	while(!glfwWindowShouldClose(window)) {
-		for(int i = 0; i < fps_target/5; i++) {
-			glClear(GL_COLOR_BUFFER_BIT);
-	
-			usleep(frame_time);
-			glfwPollEvents();
-			
-			vertecies[2] = mouse.pos[0];
-			vertecies[3] = mouse.pos[1];
-	
-			glBufferData(GL_ARRAY_BUFFER, sizeof(vertecies), vertecies, GL_STREAM_DRAW);
-	
-			glDrawArrays(GL_TRIANGLES, 0, vertex_count);
-	
-			glfwSwapBuffers(window);
-		}
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		//usleep(frame_time);
+		glfwPollEvents();
+		
+		vertecies[2] = mouse.pos[0];
+		vertecies[3] = mouse.pos[1];
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertecies), vertecies, GL_STREAM_DRAW);
+
+		glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+
+		glfwSwapBuffers(window);
 	}
 	glDisableClientState(GL_VERTEX_ARRAY);
 	return 0;

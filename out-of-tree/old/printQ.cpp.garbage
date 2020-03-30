@@ -1,0 +1,100 @@
+//#define _GLIBCXX_USE_CXX11_ABI 0
+#include <iostream>
+#include <thread>
+#include <string>
+#include <vector>
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
+#include <stdlib.h>
+
+std::vector<std::string> printQ;
+std::condition_variable cv_print;
+std::mutex mtx_lock;
+std::mutex mtx_list;
+bool terminate = false;
+
+//template <class T>
+void siftDown ()
+{
+	for (uint_fast16_t i = 1; i < printQ.size(); i++)
+	{
+		std::cout << "printQ.size() = " << printQ.size() << "\n";
+		if (printQ[i-1].empty())
+		{
+			printQ.resize(i-1);
+			std::cout << "resized\n";
+			std::cout << "printQ.size() = " << printQ.size() << "\n";
+			return;
+		}
+		printQ[i-1] = printQ[i];
+		std::cout << "sifted " << printQ[i] << " from " << i << " to " << i-1 << "\n";
+	}
+}
+// pring overloading
+/*template <class T>
+void print (T in)
+{
+	printQ.emplace_back(std::to_string(in));
+}
+*/
+void print (std::string s)
+{
+	std::cout << "main locking\n";
+	mtx_list.lock();
+	std::cout << "main locked\n";
+	printQ.push_back(s);
+	mtx_list.unlock();
+	std::cout << "main unlocked\n";
+
+	cv_print.notify_one();
+}
+
+void printFunc ()
+{
+	std::unique_lock<std::mutex> lck(mtx_lock);
+	while(true)
+	{
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		if (terminate)
+			return;
+		if (printQ.size() == 0)
+		{
+			std::cout << "printQ.size() == 0\n";
+			cv_print.wait(lck);
+			uint64_t iteraions = printQ.size();
+		}
+		if (terminate)
+			return;
+		std::cout << "locking\n";
+		mtx_list.lock();
+		std::cout << "locked\n";
+		do
+		{
+			std::cout << printQ[0];
+			siftDown();
+			std::cout << "\t" << printQ.size() << " size\n";
+		}while(printQ.size() != 0);
+		mtx_list.unlock();
+		std::cout << "unlocked\n";
+	}
+}
+
+int main ()
+{
+	std::thread t_print (printFunc);
+	for (uint64_t i = 0; i < 10; i++)
+	{
+		print (std::to_string(i));
+		std::cout << "i = "<< i << "\n";
+		print ("\n");
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}
+
+	terminate = true;
+	cv_print.notify_one();
+	
+	//if (t_print.joinable())
+		t_print.join();
+	return 0;
+}
