@@ -59,7 +59,8 @@ int main() {
 	float vertecies[] = {
 		-0.5,  -0.5, 
 		 0.0,   1.0,  
-		 0.5,  -0.5
+		 0.5,  -0.5,
+		 0.0,  -0.5
 	};
 	auto vertex_count = sizeof(vertecies)/(sizeof(vertecies[0])*2);
 	
@@ -74,7 +75,7 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertecies), vertecies, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vertecies[0])*2, 0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vertecies[0])*3, 0);
 
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
 	//glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -85,7 +86,7 @@ int main() {
 	constexpr auto ns = 1*1000*1000;
 	constexpr auto frame_time = 1/fps_target*ns;
 
-	glfwSwapInterval(0);
+	//glfwSwapInterval(0);
 
 	while(!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -98,7 +99,7 @@ int main() {
 
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertecies), vertecies, GL_STREAM_DRAW);
 
-		glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+		glDrawArrays(GL_QUADS, 0, vertex_count);
 
 		glfwSwapBuffers(window);
 	}
