@@ -1,5 +1,9 @@
 #include <stdio.h>
+#include <pragma>
+#include <iostream>
 
+#define log_var(var) (std::cout << #var << "=" << var << std::endl)
+/*
 template<class T>
 T det(T** m, int dim, int skip) {
 	// array is of size dim x dim
@@ -44,7 +48,12 @@ template<class T>
 T det(T** m, int dim) {
 	return det(m, dim-1, -1);
 }
+*/
 
+template<class T>
+void add(T** a, T** b, long len_a, len_b) {
+	
+}
 
 int main() {
 
