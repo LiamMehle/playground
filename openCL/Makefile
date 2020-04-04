@@ -11,7 +11,7 @@ flags_perf=-Ofast -march=skylake -msse2 -ffast-math
 flags_perf_debug=-fopt-info-vec-missed
 flags_debug=-O0 -g3
 
-flags_lib=-lGL -L/usr/lib -L/usr/local/include -lglfw3 -lGLEW -ldl -lvulkan -lpthread -I/home/wolf/Downloads/vulkan-sdk/x86_64/include -L/home/wolf/Downloads/vulkan-sdk/x86_64/lib
+flags_lib=-lOpenCL -pthread
 flags_common=-Wno-narrowing -lm $(flags_lib)
 
 #flags_perf+=$(flags_perf_debug)
@@ -21,7 +21,7 @@ flags_common=-Wno-narrowing -lm $(flags_lib)
 
 #perf: main.cpp, clean
 #	assem
-all: perf
+all: debug
 
 perf: clean make_dir_struct
 	$(cc) src/main.cpp -o bin/main $(flags_common) $(flags_perf)

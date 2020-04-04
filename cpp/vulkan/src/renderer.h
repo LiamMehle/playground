@@ -34,6 +34,7 @@ public:
 	VkPhysicalDevice           gpu                    = VK_NULL_HANDLE;
 	VkDevice                   device                 = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_properties         = {};
+	VkQueue                    queue                  = VK_NULL_HANDLE;
 
 	uint32_t                   graphics_family_index  = -1;
 
@@ -134,14 +135,18 @@ public:
 #endif
 
 		vkCreateDevice( gpu, &device_create_info, nullptr, &device);
-		
+
+		vkGetDeviceQueue(device, graphics_family_index, 0, &queue);
+		assert(queue != VK_NULL_HANDLE);
+
 		return 0;
 	}
 
 	void deinit_instance() {
-		vkDestroyInstance(instance, nullptr);
 		vkDestroyDevice(device, nullptr);
-		instance = nullptr;
+		device = VK_NULL_HANDLE;
+		vkDestroyInstance(instance, nullptr);
+		instance = VK_NULL_HANDLE;
 	}
 
 	void setupDebug() {

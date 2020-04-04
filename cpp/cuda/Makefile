@@ -1,20 +1,12 @@
 
 cc=g++
 flags_perf=-Ofast -march=skylake -msse2 -ffast-math
-#-fopt-info
-#          -vec
-#              -missed
-#          -inline
-#                 -optimized
-
-
-flags_perf_debug=-fopt-info-vec-missed
+flags_perf_debug=-fopt-info-vec
 flags_debug=-O0 -g3
 
-flags_lib=-lGL -L/usr/lib -L/usr/local/include -lglfw3 -lGLEW -ldl -lvulkan -lpthread -I/home/wolf/Downloads/vulkan-sdk/x86_64/include -L/home/wolf/Downloads/vulkan-sdk/x86_64/lib
-flags_common=-Wno-narrowing -lm $(flags_lib)
+flags_lib=-lGL -L/usr/lib -I/usr/include -lpthread
 
-#flags_perf+=$(flags_perf_debug)
+flags_perf+=$(flags_perf_debug)
 
 #assem: main.cpp, clean
 #	$(cc) -S $(target).cpp -o (target).s $(flags)
