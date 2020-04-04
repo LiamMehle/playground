@@ -102,6 +102,8 @@ int main(void) {
 		vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
 	}
 
+	
+
 	// device, fence#, list, wait for all?, max wait time
 	// auto ret = vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
 	//if(ret != VK_SUCCESS)
