@@ -21,7 +21,7 @@ flags_common=-Wno-narrowing -lm $(flags_lib)
 
 #perf: main.cpp, clean
 #	assem
-all: perf
+all: debug
 
 perf: clean make_dir_struct
 	$(cc) src/main.cpp -o bin/main $(flags_common) $(flags_perf)

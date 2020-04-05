@@ -87,22 +87,26 @@ int main(void) {
 		vkEndCommandBuffer(command_buffer[i]); // compiles commands stored into exec state
 
 
-	for(int i = 0; i < BUFFER_COUNT; i++) {
-		// VkPipelineStageFlags flags[] { VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT};
+	{
+		VkSubmitInfo submit_info[BUFFER_COUNT];
 		VkPipelineStageFlags flags[] { VK_PIPELINE_STAGE_ALL_COMMANDS_BIT };
-		VkSubmitInfo submit_info {
-			.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-			.pWaitSemaphores      = &semaphore,
-			.pWaitDstStageMask    = flags,
-			.commandBufferCount   = BUFFER_COUNT,
-			.pCommandBuffers      = &command_buffer[i],
-			.signalSemaphoreCount = 1,
-			.pSignalSemaphores    = &semaphore
-		};
-		vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
+		for(int i = 0; i < BUFFER_COUNT; i++) {
+			// VkPipelineStageFlags flags[] { VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT};
+			submit_info[i] = {
+				.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+				.pNext                = &submit_info[i+1],
+				.pWaitSemaphores      = &semaphore,
+				.pWaitDstStageMask    = flags,
+				.commandBufferCount   = BUFFER_COUNT,
+				.pCommandBuffers      = &command_buffer[i],
+				.signalSemaphoreCount = 1,
+				.pSignalSemaphores    = &semaphore
+			};
+		}
+		submit_info[BUFFER_COUNT-1].pNext = VK_NULL_HANDLE;
+		vkQueueSubmit(queue, 1, &submit_info[0], VK_NULL_HANDLE);
 	}
 
-	
 
 	// device, fence#, list, wait for all?, max wait time
 	// auto ret = vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
@@ -110,13 +114,60 @@ int main(void) {
 	//	puts("gpu still busy");
 	//vkQueueWaitIdle(queue);
 
+	// making the buffer
+#ifdef VERBOSE
+	{
+		assert(device != VK_NULL_HANDLE);
+		VkPhysicalDeviceMemoryProperties properties;
+		vkGetPhysicalDeviceMemoryProperties(r.gpu, &properties);
+		for(int i = 0; i < properties.memoryTypeCount; i++) {
+			log_var(i);
+			auto flags = properties.memoryTypes[i].propertyFlags;
+			if(flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+				std::cout << "VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT" << std::endl;
+    		if(flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+    			std::cout << "VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT" << std::endl;
+    		if(flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+    			std::cout << "VK_MEMORY_PROPERTY_HOST_COHERENT_BIT" << std::endl;
+    		if(flags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT)
+    			std::cout << "VK_MEMORY_PROPERTY_HOST_CACHED_BIT" << std::endl;
+    		if(flags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)
+    			std::cout << "VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT" << std::endl;
+		}
+		std::cout << std::endl;
+		for(int i = 0; i < properties.memoryHeapCount; i++) {
+			log_var(i);
+			auto flags = properties.memoryHeaps[i].flags;
+			if(flags)
+				std::cout << "VK_MEMORY_HEAP_DEVICE_LOCAL_BIT" << std::endl;
+		}
+	}
+#endif
+	VkImage image = VK_NULL_HANDLE;
+	{
+		VkImageCreateInfo image_create_info {
+			.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+			.imageType     = VK_IMAGE_TYPE_2D,
+			.format        = VK_FORMAT_B8G8R8_UINT,
+			.extent        = {
+				.width     = 512,
+				.height    = 512,
+				.depth     = 1
+			},
+			.arrayLayers   = 1,
+			.samples       = VK_SAMPLE_COUNT_1_BIT,
+			.tiling        = VK_IMAGE_TILING_OPTIMAL,
+			.usage         = VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+			.initialLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+		};
+		error_check(vkCreateImage(device, &image_create_info, VK_NULL_HANDLE, &image));
+	}
 	
-	
 
 
-
+	// semaphor
 	vkDestroyCommandPool(device, command_pool, nullptr);
 	vkDestroyFence(device, fence, nullptr);	
-
+	std::exit(0);
 	return 0;
 }

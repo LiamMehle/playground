@@ -44,23 +44,25 @@ public:
 	std::vector<const char*>   device_extensions  ;
 
 	int init_instance() {
-		VkApplicationInfo application_info = {
-			.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-			.pApplicationName   = "Vulkan test 01",
-			.applicationVersion = VK_MAKE_VERSION(0, 1, 0),
-			.apiVersion         = VK_MAKE_VERSION(1, 0, 3)
-		};
+		{
+			VkApplicationInfo application_info = {
+					.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+					.pApplicationName   = "Vulkan test 01",
+					.applicationVersion = VK_MAKE_VERSION(0, 1, 0),
+					.apiVersion         = VK_MAKE_VERSION(1, 0, 3)
+			};
 
-		VkInstanceCreateInfo instance_create_info {
-			.sType                 = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-			.pApplicationInfo      = &application_info,
-			.enabledLayerCount     = instance_layers.size(),
-			.ppEnabledLayerNames   = instance_layers.data(),
-			.enabledExtensionCount = instance_extensions.size(),
-			//.enabledExtensionNames = instance_extensions.size()
-		};
-		
-		error_check(vkCreateInstance(&instance_create_info, nullptr, &instance));
+			VkInstanceCreateInfo instance_create_info {
+				.sType                 = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+				.pApplicationInfo      = &application_info,
+				.enabledLayerCount     = instance_layers.size(),
+				.ppEnabledLayerNames   = instance_layers.data(),
+				.enabledExtensionCount = instance_extensions.size(),
+				//.enabledExtensionNames = instance_extensions.size()
+			};
+
+			error_check(vkCreateInstance(&instance_create_info, nullptr, &instance));
+		}
 
 		uint32_t gpu_count = 0;
 		error_check(vkEnumeratePhysicalDevices(instance, &gpu_count, nullptr));
@@ -134,7 +136,7 @@ public:
 		}
 #endif
 
-		vkCreateDevice( gpu, &device_create_info, nullptr, &device);
+		vkCreateDevice(gpu, &device_create_info, nullptr, &device);
 
 		vkGetDeviceQueue(device, graphics_family_index, 0, &queue);
 		assert(queue != VK_NULL_HANDLE);
