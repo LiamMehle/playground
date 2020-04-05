@@ -1,4 +1,5 @@
 #define GLEW_STATIC
+#define GLFW_INCLUDE_VULKAN
 #include "renderer.h"
 #include <stdio.h>
 #include <iostream>
@@ -163,6 +164,18 @@ int main(void) {
 		error_check(vkCreateImage(device, &image_create_info, VK_NULL_HANDLE, &image));
 	}
 	
+	GLFWwindow* window = glfwCreateWindow(512, 512, "hello triangle", NULL, NULL);
+	if(windo == NULL)
+		std::exit(1);
+
+	while (!glfwWindowShouldClose(window)) {
+ 
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+
+
 
 
 	// semaphor
