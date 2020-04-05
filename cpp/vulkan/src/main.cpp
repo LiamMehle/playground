@@ -13,6 +13,10 @@ int main(void) {
 #ifdef VERBOSE
 	puts("initing renderer");
 #endif
+	if (!glfwVulkanSupported())
+		std::exit(99);
+	
+
 	renderer r;
 	auto device = r.device;
 	auto queue  = r.queue;
@@ -165,7 +169,7 @@ int main(void) {
 	}
 	
 	GLFWwindow* window = glfwCreateWindow(512, 512, "hello triangle", NULL, NULL);
-	if(windo == NULL)
+	if(window == NULL)
 		std::exit(1);
 
 	while (!glfwWindowShouldClose(window)) {
