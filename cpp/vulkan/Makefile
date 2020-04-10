@@ -12,7 +12,7 @@ FLAGS_FAST=-O0
 #                 -optimized
 
 
-FLAGS_PERF_debug=-fopt-info-vec-missed
+FLAGS_PERF_DEBUG=-fopt-info-vec-missed
 
 VULKAN_SDK=/home/wolf/Downloads/vulkan-sdk/x86_64/
 # FLAGS_LIB=-lGL -lm-L/usr/lib -L/usr/local/include -lglfw3 -ldl -lvulkan -lpthread -I$(VULKAN_SDK)/include -L$(VULKAN_SKD)/lib
@@ -20,10 +20,10 @@ FLAGS_LIB=-lglfw3 -ldl -lm -lvulkan -lpthread -I$(VULKAN_SDK)/include -L$(VULKAN
 FLAGS_COMMON=-Wall
 
 # flags used for the pch
-export FLAGS_PCH=$(FLAGS_LIB) $(FLAGS_COMMON) $(FLAGS_PERF)
+export FLAGS_PCH=$(FLAGS_LIB) $(FLAGS_COMMON) $(FLAGS_DEBUG)
 
 # flags used for compilation
-FLAGS=$(FLAGS_COMMON) $(FLAGS_PERF)
+FLAGS=$(FLAGS_COMMON) $(FLAGS_DEBUG)
 
 
 
@@ -31,7 +31,7 @@ OBJECTS=main.o renderer.o debug_utils.o
 
 # final compile
 all :: $(OBJECTS)
-	$(CC) obj/*.o -o bin/main $(FLAGS)
+	$(CC) obj/*.o -o bin/main $(FLAGS) $(FLAGS_LIB) #$(FLAGS_PERF_DEBUG)
 
 %.o :: %.c pch.h.gch
 	$(CC) $(FLAGS) -c $< -o obj/$@

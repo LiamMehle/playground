@@ -1,12 +1,10 @@
-#include <vulkan/vulkan.h>
-#include <assert.h>
-#include <stdio.h>
+#include "pch.h"
 
-void error_check( VkResult result )
+void error_check(VkResult result)
 {
 	if( result < 0 ) {
 		switch( result ) {
-#define CASE(flag) case flag: printf("[ERROR] %s: %d\n", #flag, result); break;
+#define CASE(flag) case flag: printf("[ERROR] %s: %d\n", #flag, flag); break;
 		CASE(VK_SUCCESS)
 		CASE(VK_NOT_READY)
 		CASE(VK_TIMEOUT)
