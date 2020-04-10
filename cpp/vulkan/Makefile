@@ -36,11 +36,6 @@ all :: $(OBJECTS)
 %.o :: %.c pch.h.gch
 	$(CC) $(FLAGS) -c $< -o obj/$@
 
-#compile_objects: pch make_dirs
-#	$(CC) src/main.c        -o obj/main.o        $(FLAGS) -c
-#	$(CC) src/renderer.c    -o obj/renderer.o    $(FLAGS) -c
-#	$(CC) src/debug_utils.c -o obj/debug_utils.o $(FLAGS) -c
-
 pch.h.gch :
 	$(CC) ./src/pch.h $(FLAGS_LIB)
 
