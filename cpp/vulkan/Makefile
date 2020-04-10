@@ -20,7 +20,7 @@ FLAGS_LIB=-lglfw3 -ldl -lm -lvulkan -lpthread -I$(VULKAN_SDK)/include -L$(VULKAN
 FLAGS_COMMON=-Wall
 
 # flags used for the pch
-export FLAGS_PCH=$(FLAGS_LIB) $(FLAGS_COMMON) $(FLAGS_DEBUG)
+export FLAGS_PCH=$(FLAGS_LIB) $(FLAGS_COMMON) $(FLAGS_PERF)
 
 # flags used for compilation
 FLAGS=$(FLAGS_COMMON) $(FLAGS_DEBUG)
@@ -31,7 +31,7 @@ OBJECTS=main.o renderer.o debug_utils.o
 
 # final compile
 all :: $(OBJECTS)
-	$(CC) obj/*.o -o bin/main $(FLAGS) $(FLAGS_LIB) #$(FLAGS_PERF_DEBUG)
+	$(CC) obj/*.o -o bin/main $(FLAGS) $(FLAGS_LIB)
 
 %.o :: %.c pch.h.gch
 	$(CC) $(FLAGS) -c $< -o obj/$@
@@ -44,6 +44,6 @@ make_dirs :
 	[ -e './obj/' ] || mkdir obj
 
 clean:
-	[ $(ls ./bin/ | wc -l) -eq '0'] || rm -rf ./bin/*
-	[ $(ls ./obj/ | wc -l) -eq '0'] || rm -rf ./obj/*
+	[ $(ls ./bin/ | wc -l) -eq '0' ] || rm -rf ./bin/*
+	[ $(ls ./obj/ | wc -l) -eq '0' ] || rm -rf ./obj/*
 	rm ./src/pch.pch
