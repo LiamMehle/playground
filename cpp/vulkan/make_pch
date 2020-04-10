@@ -1,3 +1,5 @@
 FLAGS_PERF=-Ofast -march=skylake -msse2 -flto
-all:
+all: src/pch.h
+
+src/pch.h:
 	$(CC) ./src/pch.h $(FLAGS_LIB)
