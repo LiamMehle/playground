@@ -1,4 +1,7 @@
 set disassembly-flavor intel
-b main
-r
+b error_check
+define hook-stop
+	p result
+end
+
 

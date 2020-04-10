@@ -1,6 +1,9 @@
 
-cc=g++
-flags_perf=-Ofast -march=skylake -msse2 -ffast-math
+export CC=gcc
+FLAGS_PERF=-Ofast -march=skylake -msse2 -flto
+FLAGS_DEBUG=-O0 -g3
+FLAGS_FAST=-O0
+
 #-fopt-info
 #          -vec
 #              -missed
@@ -8,33 +11,37 @@ flags_perf=-Ofast -march=skylake -msse2 -ffast-math
 #                 -optimized
 
 
-flags_perf_debug=-fopt-info-vec-missed
-flags_debug=-O0 -g3
+FLAGS_PERF_debug=-fopt-info-vec-missed
 
-flags_lib=-lGL -L/usr/lib -L/usr/local/include -lglfw3 -lGLEW -ldl -lvulkan -lpthread -I/home/wolf/Downloads/vulkan-sdk/x86_64/include -L/home/wolf/Downloads/vulkan-sdk/x86_64/lib
-flags_common=-Wno-narrowing -lm $(flags_lib)
+VULKAN_SDK=/home/wolf/Downloads/vulkan-sdk/x86_64/
+#FLAGS_LIB=-lGL -lm-L/usr/lib -L/usr/local/include -lglfw3 -ldl -lvulkan -lpthread -I$(VULKAN_SDK)/include -L$(VULKAN_SKD)/lib
+FLAGS_LIB=-lglfw3 -ldl -lm -lvulkan -lpthread -I$(VULKAN_SDK)/include -L$(VULKAN_SKD)/lib
+FLAGS_COMMON=-Wall
 
-#flags_perf+=$(flags_perf_debug)
+# flags used for the pch
+export FLAGS_PCH=$(FLAGS_LIB) $(FLAGS_COMMON) $(FLAGS_PERF)
 
-#assem: main.cpp, clean
-#	$(cc) -S $(target).cpp -o (target).s $(flags)
+# flags used for compilation
+FLAGS=$(FLAGS_COMMON) $(FLAGS_PERF) 
 
-#perf: main.cpp, clean
-#	assem
-all: debug
+# final compile
+all: compile_objects make_dirs
+	$(CC) obj/*.o -o bin/main $(FLAGS)
 
-perf: clean make_dir_struct
-	$(cc) src/main.cpp -o bin/main $(flags_common) $(flags_perf)
+# add lines for every source file
+compile_objects: pch make_dirs
+	$(CC) src/main.c        -o obj/main.o        $(FLAGS) -c
+	$(CC) src/renderer.c    -o obj/renderer.o    $(FLAGS) -c
+	$(CC) src/debug_utils.c -o obj/debug_utils.o $(FLAGS) -c
 
-debug: clean make_dir_struct
-	$(cc) src/main.cpp -o bin/main $(flags_common) $(flags_debug)
+pch:
+	$(MAKE) -f make_pch
 
-
-asm: clean make_dir_struct
-	$(cc) -S -include-pch src/pch.pch -masm=intel src/main.cpp -o bin/main.s $(flags_perf)
-
-make_dir_struct:
+make_dirs:
 	[ -e './bin/' ] || mkdir bin
+	[ -e './obj/' ] || mkdir obj
 
 clean:
-	[ $(ls ./bin/ | wc -l) -eq '0'] || rm -rf bin/*
+	[ $(ls ./bin/ | wc -l) -eq '0'] || rm -rf ./bin/*
+	[ $(ls ./obj/ | wc -l) -eq '0'] || rm -rf ./obj/*
+	rm ./src/pch.pch
