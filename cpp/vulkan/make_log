@@ -1,0 +1,36 @@
+src/main.c: In function ‘main’:
+src/main.c:6:33: error: redefinition of ‘task’
+    6 | #define async_print(str) task_t task = {            \
+      |                                 ^~~~
+src/main.c:40:3: note: in expansion of macro ‘async_print’
+   40 |   async_print("hi");
+      |   ^~~~~~~~~~~
+src/main.c:34:10: note: previous definition of ‘task’ was here
+   34 |   task_t task = {
+      |          ^~~~
+src/main.c:6:33: error: redefinition of ‘task’
+    6 | #define async_print(str) task_t task = {            \
+      |                                 ^~~~
+src/main.c:41:3: note: in expansion of macro ‘async_print’
+   41 |   async_print("hello");
+      |   ^~~~~~~~~~~
+src/main.c:6:33: note: previous definition of ‘task’ was here
+    6 | #define async_print(str) task_t task = {            \
+      |                                 ^~~~
+src/main.c:40:3: note: in expansion of macro ‘async_print’
+   40 |   async_print("hi");
+      |   ^~~~~~~~~~~
+src/main.c:6:33: error: redefinition of ‘task’
+    6 | #define async_print(str) task_t task = {            \
+      |                                 ^~~~
+src/main.c:42:3: note: in expansion of macro ‘async_print’
+   42 |   async_print("how are you?");
+      |   ^~~~~~~~~~~
+src/main.c:6:33: note: previous definition of ‘task’ was here
+    6 | #define async_print(str) task_t task = {            \
+      |                                 ^~~~
+src/main.c:41:3: note: in expansion of macro ‘async_print’
+   41 |   async_print("hello");
+      |   ^~~~~~~~~~~
+make: *** [Makefile:37: main.o] Error 1
+make: *** Waiting for unfinished jobs....

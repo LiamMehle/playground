@@ -1,4 +1,8 @@
+#ifndef renderer_h
+#define renderer_h
+
 #include "pch.h"
+
 
 typedef struct {
 	VkInstance                 instance;
@@ -6,24 +10,38 @@ typedef struct {
 	VkDevice                   device;
 	VkPhysicalDeviceProperties gpu_properties;
 	VkQueue                    queue;
-	
+	VkImage                    image;
+	VkImageView                image_view;
+
 	char instance_layers     [32][VK_MAX_EXTENSION_NAME_SIZE];
-	char instance_extensions [32][VK_MAX_EXTENSION_NAME_SIZE];
+	char** instance_extensions; //[32][VK_MAX_EXTENSION_NAME_SIZE];
 	char device_layers       [32][VK_MAX_EXTENSION_NAME_SIZE];
 	char device_extensions   [32][VK_MAX_EXTENSION_NAME_SIZE];
 
-	int graphics_family_index;
-	int instance_exstension_count;
-	int instance_layer_count;
-	int device_layer_count;
-	int device_extension_count;
+	uint32_t graphics_family_index;
+	int      instance_exstension_count;
+	int      instance_layer_count;
+	int      device_layer_count;
+	int      device_extension_count;
+
+
+	// assuming you're not running this on a system with more than 32 gpus
+	// you don't plan on using
+	#define gpu_blacklist_size 32
+	int gpu_blacklist[gpu_blacklist_size];
 
 	uint32_t          gpu_count;
+
+	struct window_size_t {
+		int x;
+		int y;
+	} window_size;
+
 } renderer;
 
-void renderer_init_instance(renderer*);
-void renderer_deinit_instance(renderer*);
-void renderer_get_physical_device(renderer*, VkPhysicalDevice*);
-void renderer_get_device(renderer*, VkDevice*);
-void renderer_get_instance(renderer*, VkInstance*);
-void renderer_get_queue(renderer*, VkQueue*);
+void renderer_init_instance    (renderer* restrict const r);
+void renderer_deinit_instance  (renderer* restrict const r);
+void renderer_create_image     (renderer* restrict const r);
+void debug_print_image_formats (renderer* restrict const r);
+
+#endif

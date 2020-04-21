@@ -1,6 +1,7 @@
 #include "pch.h"
+#include "debug_utils.h"
 
-void error_check(VkResult result)
+void error_check(const VkResult result)
 {
 	if( result < 0 ) {
 		switch( result ) {
@@ -29,4 +30,8 @@ void error_check(VkResult result)
 		}
 		assert( 0 && "Vulkan runtime error." );
 	}
+}
+
+void __glfw_error_callback(const int error, const char* restrict const description) {
+	fprintf(stderr, "[Error] <GLFW> %s\n", description);
 }

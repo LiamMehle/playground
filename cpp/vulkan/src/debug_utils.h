@@ -1,6 +1,12 @@
-#pragma once
-#define log_int(var)   printf(#var); printf("=%d\n", var)
-#define log_str(var)   printf(#var); printf("=%s\n", var)
-#define log_float(var) printf(#var); printf("=%f\n", var)
+#ifndef debug_utils_h
+#define debug_utils_h
 
-void error_check(VkResult);
+
+#define log_int(var)   printf("[DEBUG] %s=%d\n", #var, var)
+#define log_str(var)   printf("[DEBUG] %s=%s\n", #var, var)
+#define log_float(var) printf("[DEBUG] %s=%f\n", #var, var)
+
+void error_check(const VkResult);
+void __glfw_error_callback(const int, const char* restrict const);
+
+#endif

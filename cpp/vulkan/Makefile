@@ -17,7 +17,7 @@ FLAGS_PERF_DEBUG=-fopt-info-vec-missed
 VULKAN_SDK=/home/wolf/Downloads/vulkan-sdk/x86_64/
 # FLAGS_LIB=-lGL -lm-L/usr/lib -L/usr/local/include -lglfw3 -ldl -lvulkan -lpthread -I$(VULKAN_SDK)/include -L$(VULKAN_SKD)/lib
 FLAGS_LIB=-lglfw3 -ldl -lm -lvulkan -lpthread -I$(VULKAN_SDK)/include -L$(VULKAN_SKD)/lib
-FLAGS_COMMON=-Wall
+FLAGS_COMMON=-Wall -Wpedantic
 
 # flags used for the pch
 export FLAGS_PCH=$(FLAGS_LIB) $(FLAGS_COMMON) $(FLAGS_PERF)
@@ -27,23 +27,31 @@ FLAGS=$(FLAGS_COMMON) $(FLAGS_DEBUG)
 
 
 
-OBJECTS=main.o renderer.o debug_utils.o
+OBJECTS=main.o renderer.o debug_utils.o thread_pool.o
 
 # final compile
-all :: $(OBJECTS)
+all : make_dirs $(OBJECTS)
 	$(CC) obj/*.o -o bin/main $(FLAGS) $(FLAGS_LIB)
 
-%.o :: %.c pch.h.gch
+%.o : %.c pch.h.gch
 	$(CC) $(FLAGS) -c $< -o obj/$@
 
 pch.h.gch :
-	$(CC) ./src/pch.h $(FLAGS_LIB)
+	$(CC) ./src/pch.h
 
-make_dirs :
+make_dirs  :
 	[ -e './bin/' ] || mkdir bin
 	[ -e './obj/' ] || mkdir obj
 
 clean:
-	[ $(ls ./bin/ | wc -l) -eq '0' ] || rm -rf ./bin/*
-	[ $(ls ./obj/ | wc -l) -eq '0' ] || rm -rf ./obj/*
-	rm ./src/pch.pch
+	[ $(shell ls ./bin/ | wc -l) -gt '0' ] && rm -rf ./bin/
+	[ $(shell ls ./obj/ | wc -l) -gt '0' ] && rm -rf ./obj/
+	[ $(shell ls ./obj/ | wc -l) -gt '0' ] && rm ./src/pch.h.gch
+	rm core*
+
+
+
+run: exec clean
+
+exec: all
+	bin/main
