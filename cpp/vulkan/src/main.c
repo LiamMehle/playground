@@ -11,15 +11,15 @@
 
 
 thread_pool_t tp;
-renderer r;
+renderer* r;
 
 // This function can afford to be slightly more expensive as it is designed
 // to be run in a thread pool. The top priority is to stall the calling thread
 // as little as possible (at the expense ofthe thread pool).
 void print(void* args_raw) {
 	// make a local copy in case the pointed data changes
-	char* local_string = malloc(strlen(args_raw));
-	strcpy(local_string, args_raw);
+	char* local_string = (char*) malloc(strlen((const char*)args_raw));
+	strcpy(local_string, (const char*)args_raw);
 	// print the string
 	puts(local_string);
 	// prevent memory leaks
@@ -42,7 +42,9 @@ int main(void) {
 	// async_print("hi");
 	*/
 
-	renderer_init_instance(&r);
+	r = (renderer*) malloc(sizeof(renderer));
+
+	renderer_init_instance(r);
 
 
 	// set error callback
@@ -58,7 +60,7 @@ int main(void) {
 		return(-100);
 	}
 	VkSurfaceKHR surface;
-	glfwCreateWindowSurface(r.instance, window, NULL, &surface);
+	glfwCreateWindowSurface(r->instance, window, NULL, &surface);
 	sleep(1);
 
 
@@ -68,7 +70,7 @@ int main(void) {
 	// code goes here
 
 	// cleanup
-	renderer_deinit_instance(&r);
+	renderer_deinit_instance(r);
 	thread_pool_join(&tp);
 	return 0;
 }

@@ -1,61 +1,76 @@
 #include <stdio.h>
-#include <pragma>
+#include <assert.h>
 #include <iostream>
 
 #define log_var(var) (std::cout << #var << "=" << var << std::endl)
-/*
+
 template<class T>
-T det(T** m, int dim, int skip) {
-	// array is of size dim x dim
-	if(dim == 0)
-		return (T)0;
-	if(dim == 1)
-		return **m;
-	if(dim == 2) {
-		switch(skip) {
-			#define f(x,y) {m[x][0]*m[y][1]-m[y][0]*m[x][1]}
-			case 0:
-				return f(1,2);
-				break;
-			case 1:
-				return f(0,2);
-				break;
-			default:
-				return f(0,1);
-			#undef f
+void add(T** a, T** b, T**c, unsigned long len_x, unsigned long len_y) {
+	for(int y = 0; y < len_y; y++)
+		for(int x = 0; x < len_x; x++)
+			c[x][y] = a[x][y] + b[x][y];
+}
+
+
+template<class T>
+void subtract(T** a, T** b, T**c, unsigned long len_x, unsigned long len_y) {
+	for(int y = 0; y < len_y; y++)
+		for(int x = 0; x < len_x; x++)
+			c[x][y] = a[x][y] - b[x][y];
+}
+
+template<class T>
+T det(T** mat, unsigned long len_x, unsigned long len_y) {
+	T sum = 0;
+	int sign = 0; // 0 is positive, 1 is negative
+	if(len_y == 1) {
+		for(int x = 0; x < len_x; x++) {
+			if(!sign)
+				sum += mat[x][0];	
+			else
+				sum -= mat[x][0];
+			sign = sign == 0;
 		}
+		return sum;
+	}
+	if(len_x == 1) {
+		for(int y = 0; y < len_y; y++) {
+			if(!sign)
+				sum += mat[0][y];
+			else
+				sum -= mat[0][y];
+			sign = sign == 0;
+		}
+		return sum;
 	}
 
-	// recursive part
-	// matrix array that holds the data is of size dim x dim+1
-	// skipping the skip part makes the resulting matix of size dim x dim
-	bool sign = false;
-	T sum;
-	// dim+1 because that's the actual size of the matrix
-	// guaranteed at start by overload of det()
-	for(int i = 0; i<dim+1; i++) {
-		if(i == skip)
-			continue;
-		if(!sign)
-			sum += m[0][i]*det(&m[1], dim-1, i);
-		else
-			sum -= m[0][i]*det(&m[1], dim-1, i);
+	// unroll across top row
+	for(int x = 0; x < len_x; x++) {
+		// make sub-matrix
+		T** temp_mat = (T**) malloc(sizeof(T)*(len_x-1)*(len_y-1));
+		// copy sub-matrix
+		for(int i = 0; i < len_x; i++) {
+			if(i == x)
+				continue;
+			for(int y = 1; y < len_y; y++) {
+				if(i < x)
+					temp_mat[i][y+1] = mat[i][y];
+				else
+					temp_mat[i-1][y+1] = mat[i][y];
+			}
+		}
+		// recursive part
+		if(!sign) {
+			sum += mat[x][0] * det(temp_mat, len_x-1, len_y-1);
+		} else {
+			sum -= mat[x][0] * det(temp_mat, len_x-1, len_y-1);
+		}
+		sign = sign == 0;
+		free(temp_mat);
 	}
 	return sum;
 }
-// det wrapper for regular use
-template<class T>
-T det(T** m, int dim) {
-	return det(m, dim-1, -1);
-}
-*/
-
-template<class T>
-void add(T** a, T** b, long len_a, len_b) {
-	
-}
 
 int main() {
-
 	return 0;
 }

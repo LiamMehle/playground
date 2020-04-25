@@ -14,7 +14,7 @@ typedef struct {
 	VkImageView                image_view;
 
 	char instance_layers     [32][VK_MAX_EXTENSION_NAME_SIZE];
-	char** instance_extensions; //[32][VK_MAX_EXTENSION_NAME_SIZE];
+	char instance_extensions [32][VK_MAX_EXTENSION_NAME_SIZE];
 	char device_layers       [32][VK_MAX_EXTENSION_NAME_SIZE];
 	char device_extensions   [32][VK_MAX_EXTENSION_NAME_SIZE];
 
@@ -39,9 +39,9 @@ typedef struct {
 
 } renderer;
 
-void renderer_init_instance    (renderer* restrict const r);
-void renderer_deinit_instance  (renderer* restrict const r);
-void renderer_create_image     (renderer* restrict const r);
-void debug_print_image_formats (renderer* restrict const r);
+void renderer_init_instance    (renderer* const r);
+void renderer_deinit_instance  (renderer* const r);
+void renderer_create_image     (renderer* const r);
+void debug_print_image_formats (const renderer* const r);
 
 #endif

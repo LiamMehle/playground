@@ -13,8 +13,38 @@
 
 	procedure used often with vulkan enumeration functions
 */
+void load_required_extensions(renderer* __restrict const r) {
+	uint count;
+	const char** extensions = glfwGetRequiredInstanceExtensions(&count);
+	for(int i = 0; i < count; i++)
+		//puts(extensions[i]);
 
-void renderer_init_instance(renderer* r) {
+	for(int i = 0; i < count; i++)
+		strcpy(r->instance_extensions[i+1], extensions[i]);
+	r->instance_exstension_count += count;
+
+
+	error_check(vkEnumerateInstanceExtensionProperties(NULL, &count, NULL));
+	VkExtensionProperties* extension_properties = (VkExtensionProperties*) malloc(count*sizeof(VkExtensionProperties));
+	error_check(vkEnumerateInstanceExtensionProperties(NULL, &count, extension_properties));
+	for(int i = 0; i < count; i++) {
+		//puts(extension_properties[i].extensionName);
+	}
+	free(extension_properties);
+	extension_properties = NULL;
+
+	/*
+	strcpy(r->instance_extensions[r->instance_exstension_count++],
+		"VK_KHR_xcb_surface");
+	*/	
+}
+void load_debug_layers(renderer* __restrict const r) {
+	strcpy(r->instance_layers[r->instance_layer_count++],
+		"VK_LAYER_LUNARG_standard_validation");
+}
+
+
+void renderer_init_instance(renderer* __restrict const r) {
 	r->instance               = VK_NULL_HANDLE;
 	r->gpu                    = VK_NULL_HANDLE;
 	r->device                 = VK_NULL_HANDLE;
@@ -33,35 +63,26 @@ void renderer_init_instance(renderer* r) {
 		};
 
 		// get required instance extensions to use with glfw
-		uint count;
-		const char** extensions = glfwGetRequiredInstanceExtensions(&count);
-		for(int i = 0; i < count; i++)
-			puts(extensions[i]);
-
-		// load in all of the required extensions
 		
-		strcpy(r->instance_extensions[0], "VK_KHR_xcb_surface");
-		//r->instance_extensions[0] = "VK_KHR_xcb_surface";
-		r->instance_exstension_count++;
+		load_required_extensions(r);
+		//load_debug_layers(r);
 
-		for(int i = 0; i < count; i++)
-			strcpy(r->instance_extensions[i+1], extensions[i]);
-		r->instance_exstension_count += count;
-		
-		const VkInstanceCreateInfo instance_create_info = {
+		VkInstanceCreateInfo* instance_create_info = (VkInstanceCreateInfo*) malloc(sizeof(VkInstanceCreateInfo));
+		*instance_create_info = (VkInstanceCreateInfo) {
 			.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 			.pApplicationInfo        = &application_info,
-			.enabledLayerCount       = r->instance_layer_count,
+			.enabledLayerCount       = static_cast<uint32_t>(r->instance_layer_count),
 			.ppEnabledLayerNames     = (const char* const*) r->instance_layers,
-			.enabledExtensionCount   = r->instance_exstension_count,
+			.enabledExtensionCount   = static_cast<uint32_t>(r->instance_exstension_count),
 			.ppEnabledExtensionNames = (const char* const*) r->instance_extensions
 		};
-		error_check(vkCreateInstance(&instance_create_info, VK_NULL_HANDLE, &r->instance));
-	}
+		/*error_check(*/vkCreateInstance(instance_create_info, VK_NULL_HANDLE, &r->instance)/*)*/;
+		free(instance_create_info);
+	}	puts("success");
 
 	uint32_t gpu_count = 0;
 	error_check(vkEnumeratePhysicalDevices(r->instance, &gpu_count, VK_NULL_HANDLE));
-	VkPhysicalDevice* gpu_list = malloc(gpu_count*sizeof(VkPhysicalDevice));
+	VkPhysicalDevice* gpu_list = (VkPhysicalDevice*) malloc(gpu_count*sizeof(VkPhysicalDevice));
 	error_check(vkEnumeratePhysicalDevices(r->instance, &gpu_count, gpu_list));
 
 #ifdef VERBOSE
@@ -95,7 +116,7 @@ void renderer_init_instance(renderer* r) {
 
 			uint property_count;
 			error_check(vkEnumerateDeviceExtensionProperties(gpu_list[i], NULL, &property_count, NULL));
-			property_list = malloc(property_count*sizeof(VkExtensionProperties));
+			property_list = (VkExtensionProperties*) malloc(property_count*sizeof(VkExtensionProperties));
 			error_check(vkEnumerateDeviceExtensionProperties(gpu_list[i], NULL, &property_count, property_list));
 			for(int j = 0; j < property_count; j++) {
 				if(!strcmp(property_list[j].extensionName, "VK_KHR_swapchain")) {
@@ -129,7 +150,7 @@ void renderer_init_instance(renderer* r) {
 		r->graphics_family_index = -1;
 		uint32_t family_count = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(r->gpu, &family_count, NULL);
-		VkQueueFamilyProperties* family_property_list = malloc(family_count*sizeof(VkQueueFamilyProperties));
+		VkQueueFamilyProperties* family_property_list = (VkQueueFamilyProperties*) malloc(family_count*sizeof(VkQueueFamilyProperties));
 		vkGetPhysicalDeviceQueueFamilyProperties(r->gpu, &family_count, family_property_list);
 		char found = 0;
 		for(uint32_t i = 0; i < family_count; i++) {
@@ -188,8 +209,8 @@ void renderer_create_image(renderer* r) {
 			.imageType             = VK_IMAGE_TYPE_2D,
 			.format                = VK_FORMAT_B8G8R8_UINT,
 			.extent = {
-				.width                 = r->window_size.x,
-				.height                = r->window_size.y,
+				.width                 = static_cast<uint32_t>(r->window_size.x),
+				.height                = static_cast<uint32_t>(r->window_size.y),
 				.depth                 = 3
 			},
 			.mipLevels             = 1,

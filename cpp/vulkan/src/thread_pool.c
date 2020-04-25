@@ -20,7 +20,7 @@ void*    	argument structure pointer
 static unsigned int max_tasks;
 static unsigned int thread_count;
 /* // UNUSED
-static unsigned int task_count(const task_queue_t* restrict const task_queue) {
+static unsigned int task_count(const task_queue_t* __restrict const task_queue) {
 	if(task_queue->head == task_queue->tail)
 		return 0;
 	if(task_queue->head > task_queue->tail)
@@ -30,19 +30,19 @@ static unsigned int task_count(const task_queue_t* restrict const task_queue) {
 	return 0;
 }
 */
-static unsigned int task_count_is_zero(const task_queue_t* restrict const task_queue) {
+static unsigned int task_count_is_zero(const task_queue_t* __restrict const task_queue) {
 	if(task_queue->head == task_queue->tail)
 		return 1;
 	return 0;
 }
 
-static unsigned int task_count_is_full(const task_queue_t* restrict const task_queue) {
+static unsigned int task_count_is_full(const task_queue_t* __restrict const task_queue) {
 	if(task_queue->head == task_queue->tail - 1)
 		return 1;
 	return 0;
 }
 
-static int task_push(task_queue_t* restrict const task_queue, const task_t* restrict const task) {
+static int task_push(task_queue_t* __restrict const task_queue, const task_t* __restrict const task) {
 	pthread_mutex_lock(&task_queue->mutex);
 	if(task_count_is_full(task_queue)) {
 		pthread_mutex_unlock(&task_queue->mutex);
@@ -55,7 +55,7 @@ static int task_push(task_queue_t* restrict const task_queue, const task_t* rest
 	return 0;
 }
 
-static void task_pop(task_queue_t* restrict const task_queue, task_t* return_value)  {
+static void task_pop(task_queue_t* __restrict const task_queue, task_t* return_value)  {
 	pthread_mutex_lock(&task_queue->mutex);
 	if(task_count_is_zero(task_queue)) {
 		pthread_mutex_unlock(&task_queue->mutex);
@@ -117,19 +117,19 @@ void* thread(void* args_raw) {
 
 
 void thread_pool_make(thread_pool_t* thread_pool,
-	const thread_pool_create_info* restrict const create_info)  {
+	const thread_pool_create_info* __restrict const create_info)  {
 
 	*thread_pool         = (thread_pool_t) {
-		.threads         = malloc(create_info->thread_count*sizeof(pthread_t)),
+		.threads         = (pthread_t*) malloc(create_info->thread_count*sizeof(pthread_t)),
 		.task_queue      = {
 			.mutex       = PTHREAD_MUTEX_INITIALIZER,
-			.tasks       = malloc(create_info->task_count*sizeof(task_t)),
+			.tasks       = (task_t*) malloc(create_info->task_count*sizeof(task_t)),
 			.head        = 0,
 			.tail        = 0
 		},
 		.terminate       = 0,
-		.thread_count    = create_info->thread_count,
-		.task_count      = create_info->task_count,
+		.thread_count    = static_cast<int>(create_info->thread_count),
+		.task_count      = static_cast<int>(create_info->task_count),
 		.mutex           = PTHREAD_MUTEX_INITIALIZER,
 		.threads_online  = 0,
 		.threads_working = 0
@@ -145,7 +145,7 @@ void thread_pool_make(thread_pool_t* thread_pool,
 	}
 }
 
-void thread_pool_join(thread_pool_t* restrict const thread_pool) {
+void thread_pool_join(thread_pool_t* __restrict const thread_pool) {
 	
 	thread_pool->terminate = 1;
 	//asm volatile("mfence":::"memory");
@@ -160,7 +160,7 @@ void thread_pool_join(thread_pool_t* restrict const thread_pool) {
 	free(thread_pool->task_queue.tasks);
 }
 
-void offload_work(thread_pool_t* restrict const thread_pool, const task_t* restrict const task) {
+void offload_work(thread_pool_t* __restrict const thread_pool, const task_t* __restrict const task) {
 	task_push(&thread_pool->task_queue, task);
 	pthread_cond_signal(&thread_pool->cv);
 }
