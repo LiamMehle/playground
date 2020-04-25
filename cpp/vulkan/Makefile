@@ -16,7 +16,6 @@ FLAGS_FAST=-O0
 FLAGS_PERF_DEBUG=-fopt-info-vec-missed
 
 VULKAN_SDK=/home/wolf/Downloads/vulkan-sdk/x86_64/
-# FLAGS_LIB=-lGL -lm-L/usr/lib -L/usr/local/include -lglfw3 -ldl -lvulkan -lpthread -I$(VULKAN_SDK)/include -L$(VULKAN_SKD)/lib
 FLAGS_LIB=-lglfw3 -ldl -lm -lvulkan -lpthread -I$(VULKAN_SDK)/include -L$(VULKAN_SKD)/lib
 FLAGS_COMMON=-Wall -Wpedantic -Wno-c99-extensions -Wno-deprecated
 
@@ -32,13 +31,13 @@ OBJECTS=main.o renderer.o debug_utils.o thread_pool.o
 
 # final compile
 all : make_dirs $(OBJECTS)
-	$(CC) obj/*.o -o bin/main $(CFLAGS) $(FLAGS_LIB)
+	$(CXX) obj/*.o -o bin/main $(CFLAGS) $(FLAGS_LIB)
 
 %.o : %.c pch.h.gch
-	$(CC) $(CFLAGS) -c $< -o obj/$@
+	$(CC) $(CFLAGS)    -c $< -o obj/$@
 
 %.o : %.cpp pch.h.gch
-	$(CXX) $(CFLAGS) -c $< -o obj/$@
+	$(CXX) $(CXXFLAGS) -c $< -o obj/$@
 
 pch.h.gch :
 	$(CC) ./src/pch.h
