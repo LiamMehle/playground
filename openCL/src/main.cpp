@@ -25,6 +25,7 @@ void error_check(cl_int err) {
 		CASE(CL_INVALID_KERNEL_DEFINITION)
 		CASE(CL_INVALID_VALUE)
 		CASE(CL_INVALID_KERNEL)
+
 		CASE(CL_INVALID_ARG_INDEX)
 		CASE(CL_INVALID_ARG_VALUE)
 		CASE(CL_INVALID_MEM_OBJECT)
@@ -32,6 +33,23 @@ void error_check(cl_int err) {
 		CASE(CL_INVALID_ARG_SIZE)
 		CASE(CL_OUT_OF_RESOURCES)
 		CASE(CL_OUT_OF_HOST_MEMORY)
+
+		//CASE(CL_INVALID_PROGRAM_EXECUTABLE) already defined
+		CASE(CL_INVALID_COMMAND_QUEUE)
+		//CASE(CL_INVALID_KERNEL) already defined
+		CASE(CL_INVALID_CONTEXT)
+		CASE(CL_INVALID_KERNEL_ARGS)
+		CASE(CL_INVALID_WORK_DIMENSION)
+		CASE(CL_INVALID_WORK_GROUP_SIZE)
+		//CASE(CL_INVALID_WORK_GROUP_SIZE) doc repeats it's self
+		//CASE(CL_INVALID_WORK_GROUP_SIZE)
+		CASE(CL_INVALID_WORK_ITEM_SIZE)
+		CASE(CL_INVALID_GLOBAL_OFFSET)
+		//CASE(CL_OUT_OF_RESOURCES) already defined
+		CASE(CL_DEVICE_MAX_READ_IMAGE_ARGS)
+		CASE(CL_MEM_OBJECT_ALLOCATION_FAILURE)
+		CASE(CL_INVALID_EVENT_WAIT_LIST)
+		//CASE(CL_OUT_OF_HOST_MEMORY) already defined
 		case 0:  break;
 		default: break;
 	}
@@ -50,11 +68,11 @@ int main() {
 	cl_kernel        kernel;     // kernel
 
 
-	const int          items_per_group = 64;
+	const size_t       local_size      = 16;
 	const unsigned int d               = 3;
 	const unsigned int n               = 1024;
 	const size_t       elem_count      = n * d;
-	const size_t       group_count     = ceil(n/(float)items_per_group)*elem_count;
+	const size_t       global_size     = ceil(n/(float)local_size)*local_size;
 	const size_t       bytes           = elem_count*sizeof(float);
 	int err;
 	err = clGetPlatformIDs(1, &platform, NULL);
@@ -88,12 +106,12 @@ int main() {
 	close(kernel_fd);
 	// generate array
 	
-
-	float** const h_arrs = (float**) malloc(bytes);
+#define at_index(ptr, y, x, stride) ptr[x+y*stride]
+	float* const h_arrs = (float*) malloc(bytes);
 
 	for(int i = 0; i < n; i++) {
-		h_arrs[0][i] = i + 1;
-		h_arrs[1][i] = -i;
+		at_index(h_arrs, 0, i, n) = i + 1;
+		at_index(h_arrs, 1, i, n) = -i;
 	}
 
 
@@ -102,21 +120,29 @@ int main() {
 	err = clEnqueueWriteBuffer(queue, d_arrs, CL_TRUE, 0,
     	                           bytes, h_arrs, 0, NULL, NULL);
 
-	err = clSetKernelArg(kernel, 0, bytes, &d_arrs);
+	// setting sizeof() to bytes will create a bus error, which is interesting
+	err = clSetKernelArg(kernel, 0, sizeof(float*), &d_arrs);
 	error_check(err);
 	err = clSetKernelArg(kernel, 1, sizeof(int), &n);
 	error_check(err);
 
-	err  = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &group_count, &elem_count,
+	err  = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, &local_size,
 	                             0, NULL, NULL);
-	assert(err==0);
+	error_check(err);
 	err = clEnqueueReadBuffer(queue, d_arrs, CL_TRUE, 0,
                                 bytes, h_arrs, 0, NULL, NULL);
 	assert(err==0);
 	clFinish(queue);
 
+	// first print, for responsive feel
+	printf("%.2f + %.2f = %.2f\n", at_index(h_arrs, 0, 0, n), at_index(h_arrs, 0, 1, n), at_index(h_arrs, 0, 2, n));
 
-	printf("%.2f + %.2f = %.2f\n", h_arrs[0][0], h_arrs[1][0], h_arrs[2][0]);
+	// then cleanup
+	clReleaseMemObject(d_arrs);
+	clReleaseProgram(program);
+	clReleaseKernel(kernel);
+	clReleaseCommandQueue(queue);
+	clReleaseContext(context);
 	free(h_arrs);
 	return 0;
 }
