@@ -54,7 +54,7 @@ clean:
 
 
 
-run: exec clean
+run: clean exec clean
 
 exec: all
 	bin/main

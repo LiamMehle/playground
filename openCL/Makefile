@@ -1,6 +1,11 @@
+export VPATH=src:obj
 
-cc=g++
-flags_perf=-Ofast -march=skylake -msse2 -ffast-math
+CC=clang
+CXX=clang++
+FLAGS_PERF=-Ofast -march=skylake -msse2 -flto
+FLAGS_DEBUG=-O0 -g3
+FLAGS_FAST=-O0
+
 #-fopt-info
 #          -vec
 #              -missed
@@ -8,33 +13,31 @@ flags_perf=-Ofast -march=skylake -msse2 -ffast-math
 #                 -optimized
 
 
-flags_perf_debug=-fopt-info-vec-missed
-flags_debug=-O0 -g3
+FLAGS_PERF_DEBUG=-fopt-info-vec-missed
 
-flags_lib=-lOpenCL -pthread
-flags_common=-Wno-narrowing -lm $(flags_lib)
+FLAGS_COMMON=-Wall -Wpedantic -lOpenCL
 
-#flags_perf+=$(flags_perf_debug)
+# flags used for compilation
+CFLAGS=$(FLAGS_COMMON) $(FLAGS_DEBUG)
+CXXFLAGS=$(CFLAGS) -Wno-c99-extensions -Wno-deprecated
 
-#assem: main.cpp, clean
-#	$(cc) -S $(target).cpp -o (target).s $(flags)
+OBJECTS=main.o
 
-#perf: main.cpp, clean
-#	assem
-all: debug
+# final compile
+all : make_dirs $(OBJECTS)
+	$(CXX) obj/*.o -o bin/main $(CFLAGS) $(FLAGS_LIB)
 
-perf: clean make_dir_struct
-	$(cc) src/main.cpp -o bin/main $(flags_common) $(flags_perf)
+%.o : %.c
+	$(CC) $(CFLAGS)    -c $< -o obj/$@
 
-debug: clean make_dir_struct
-	$(cc) src/main.cpp -o bin/main $(flags_common) $(flags_debug)
+%.o : %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o obj/$@
 
-
-asm: clean make_dir_struct
-	$(cc) -S -include-pch src/pch.pch -masm=intel src/main.cpp -o bin/main.s $(flags_perf)
-
-make_dir_struct:
-	[ -e './bin/' ] || mkdir bin
+make_dirs  :
+	[ -d ./bin/          ] || mkdir ./bin/       ; sleep 0
+	[ -d ./obj/          ] || mkdir ./obj/       ; sleep 0
 
 clean:
-	[ $(ls ./bin/ | wc -l) -eq '0'] || rm -rf bin/*
+	[ -d ./bin/          ] && rm -rf ./bin/      ; sleep 0
+	[ -d ./obj/          ] && rm -rf ./obj/      ; sleep 0
+	[ -f ./core*         ] && rm ./core*         ; sleep 0

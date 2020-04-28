@@ -33,10 +33,10 @@ void load_required_extensions(renderer* __restrict const r) {
 	free(extension_properties);
 	extension_properties = NULL;
 
-	/*
+	
 	strcpy(r->instance_extensions[r->instance_exstension_count++],
-		"VK_KHR_xcb_surface");
-	*/	
+	"VK_KHR_xcb_surface");
+	
 }
 void load_debug_layers(renderer* __restrict const r) {
 	strcpy(r->instance_layers[r->instance_layer_count++],
@@ -57,8 +57,11 @@ void renderer_init_instance(renderer* __restrict const r) {
 	{ // set up the VkInstance
 		const VkApplicationInfo application_info = {
 				.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+				.pNext              = NULL,
 				.pApplicationName   = "Vulkan test 01",
 				.applicationVersion = VK_MAKE_VERSION(0, 0, 1),
+				.pEngineName        = "Vulkan test engine 01",
+				.engineVersion      = VK_MAKE_VERSION(0, 0, 1),
 				.apiVersion         = VK_MAKE_VERSION(1, 0, 3)
 		};
 
@@ -70,13 +73,15 @@ void renderer_init_instance(renderer* __restrict const r) {
 		VkInstanceCreateInfo* instance_create_info = (VkInstanceCreateInfo*) malloc(sizeof(VkInstanceCreateInfo));
 		*instance_create_info = (VkInstanceCreateInfo) {
 			.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+			.pNext                   = NULL,
+			.flags                   = 0,
 			.pApplicationInfo        = &application_info,
-			.enabledLayerCount       = static_cast<uint32_t>(r->instance_layer_count),
+			.enabledLayerCount       = r->instance_layer_count,
 			.ppEnabledLayerNames     = (const char* const*) r->instance_layers,
-			.enabledExtensionCount   = static_cast<uint32_t>(r->instance_exstension_count),
+			.enabledExtensionCount   = r->instance_exstension_count,
 			.ppEnabledExtensionNames = (const char* const*) r->instance_extensions
 		};
-		/*error_check(*/vkCreateInstance(instance_create_info, VK_NULL_HANDLE, &r->instance)/*)*/;
+		/*error_check(*/vkCreateInstance(instance_create_info, NULL, &r->instance)/*)*/;
 		free(instance_create_info);
 	}	puts("success");
 
@@ -209,8 +214,8 @@ void renderer_create_image(renderer* r) {
 			.imageType             = VK_IMAGE_TYPE_2D,
 			.format                = VK_FORMAT_B8G8R8_UINT,
 			.extent = {
-				.width                 = static_cast<uint32_t>(r->window_size.x),
-				.height                = static_cast<uint32_t>(r->window_size.y),
+				.width                 = r->window_size.x,
+				.height                = r->window_size.y,
 				.depth                 = 3
 			},
 			.mipLevels             = 1,
@@ -242,7 +247,7 @@ void renderer_destroy_image(renderer* r) {
 	vkDestroyImage(r->device, r->image, NULL);
 }
 
-void debug_print_image_formats(renderer* r) {
+void debug_print_image_formats(const renderer* r) {
 	{
 		VkFormatProperties format_properties;
 		vkGetPhysicalDeviceFormatProperties(r->gpu, VK_FORMAT_B8G8R8_UINT, &format_properties);

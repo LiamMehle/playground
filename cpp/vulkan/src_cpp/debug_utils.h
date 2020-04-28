@@ -7,6 +7,6 @@
 #define log_float(var) printf("[DEBUG] %s=%f\n", #var, var)
 
 void error_check(const VkResult);
-void __glfw_error_callback(const int, const char* const);
+void __glfw_error_callback(const int, const char* __restrict const);
 
 #endif

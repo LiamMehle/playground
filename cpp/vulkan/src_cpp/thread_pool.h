@@ -27,7 +27,7 @@ typedef struct {
 } task_queue_t;
 
 typedef struct {
-	         pthread_t*        threads;
+	         pthread_t*       __restrict  threads;
 	         pthread_cond_t /*restrict*/cv;
 	         task_queue_t               task_queue;
 	         pthread_mutex_t            terminate_mutex;
@@ -40,16 +40,16 @@ typedef struct {
 } thread_pool_t;
 
 /* // static helper functions 
-static          int  task_push (task_queue_t* const, const task_t* const);
-static          void task_pop  (task_queue_t* const,       task_t*      );
-static unsigned int  task_count(const task_queue_t* const);
-static unsigned int  task_count_is_full(const task_queue_t* const task_queue);
+static          int  task_push (task_queue_t* __restrict const, const task_t* __restrict const);
+static          void task_pop  (task_queue_t* __restrict const,       task_t* __restrict      );
+static unsigned int  task_count(const task_queue_t* __restrict const);
+static unsigned int  task_count_is_full(const task_queue_t* __restrict const task_queue);
 */
 
 void thread_pool_make(thread_pool_t* const,
-	const thread_pool_create_info* const);
-void thread_pool_join(thread_pool_t* const);
+	const thread_pool_create_info* __restrict const);
+void thread_pool_join(thread_pool_t* __restrict const);
 
-void offload_work(thread_pool_t* const, const task_t* const);
+void offload_work(thread_pool_t* __restrict const, const task_t* __restrict const);
 
 #endif

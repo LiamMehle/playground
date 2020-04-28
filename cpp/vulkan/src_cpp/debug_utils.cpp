@@ -32,6 +32,6 @@ void error_check(const VkResult result)
 	}
 }
 
-void __glfw_error_callback(const int error, const char* const description) {
+void __glfw_error_callback(const int error, const char* __restrict const description) {
 	fprintf(stderr, "[Error] <GLFW> %s\n", description);
 }
