@@ -15,23 +15,23 @@ FLAGS_FAST=-O0
 
 FLAGS_PERF_DEBUG=-fopt-info-vec-missed
 
-FLAGS_COMMON=-Wall -Wpedantic -lOpenCL
-
+FLAGS_COMMON=-Wall -Wpedantic -lOpenCL -lm -Wno-deprecated -Wno-unused-command-line-argument
+FLAGS_COMMON+=-fopenmp -cl-fast-relaxed-math
 # flags used for compilation
-CFLAGS=$(FLAGS_COMMON) $(FLAGS_DEBUG)
-CXXFLAGS=$(CFLAGS) -Wno-c99-extensions -Wno-deprecated
+CFLAGS=$(FLAGS_COMMON) $(FLAGS_PERF) 
+CXXFLAGS=$(CFLAGS) -Wno-c99-extensions
 
 OBJECTS=main.o
 
 # final compile
 all : make_dirs $(OBJECTS)
-	$(CXX) obj/*.o -o bin/main $(CFLAGS) $(FLAGS_LIB)
+	$(CC) obj/*.o -o bin/main $(CFLAGS) $(FLAGS_LIB)
 
 %.o : %.c
 	$(CC) $(CFLAGS)    -c $< -o obj/$@
 
-%.o : %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o obj/$@
+#%.o : %.cpp
+#	$(CXX) $(CXXFLAGS) -c $< -o obj/$@
 
 make_dirs  :
 	[ -d ./bin/          ] || mkdir ./bin/       ; sleep 0

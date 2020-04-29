@@ -1,19 +1,19 @@
 #define CL_USE_DEPRICATED_OPENCL_2_0_APIS
-
-#include <iostream>
+//#define NDEBUG
+#include "config.h"
+#include <stdio.h>
 #include <CL/cl.h>
-#include <vector>
 #include <assert.h>
-#include <fstream>
 #include <math.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <omp.h>
 
 
-#define KERNEL_PATH "/home/wolf/git/playground/openCL/src/kernel.cl"
 
 
 void error_check(cl_int err) {
@@ -59,6 +59,11 @@ void error_check(cl_int err) {
 
 
 int main() {
+	printf("using type of size %lu\n", sizeof(VAR_TYPE));
+
+	struct timeval t0, t1;
+	double setup_time, gpu_time, cpu_time;
+	gettimeofday(&t0, NULL);
 
 	cl_platform_id   platform = NULL;   // OpenCL platform
 	cl_device_id     device_id;  // device ID
@@ -68,12 +73,12 @@ int main() {
 	cl_kernel        kernel;     // kernel
 
 
-	const size_t       local_size      = 16;
-	const unsigned int d               = 3;
-	const unsigned int n               = 1024;
-	const size_t       elem_count      = n * d;
+	const size_t       local_size      = 1024;
+	const unsigned int d               = 3;            // layers
+	const unsigned int n               = 1024*1024*32; // elements per layer
+	const size_t       elem_count      = n * d;        // total elements
 	const size_t       global_size     = ceil(n/(float)local_size)*local_size;
-	const size_t       bytes           = elem_count*sizeof(float);
+	const size_t       bytes           = elem_count*sizeof(VAR_TYPE);
 	int err;
 	err = clGetPlatformIDs(1, &platform, NULL);
 	assert(err==0);
@@ -89,7 +94,7 @@ int main() {
 	struct stat kernel_source_stat;
 	err = fstat(kernel_fd, &kernel_source_stat);
 	assert(err==0);
-	char* __restrict const kernel_source = (char*) mmap(nullptr,
+	char* __restrict const kernel_source = (char*) mmap(NULL,
 		kernel_source_stat.st_size, PROT_READ, MAP_PRIVATE, kernel_fd, 0);
 
 	program = clCreateProgramWithSource(context, 1,
@@ -98,6 +103,13 @@ int main() {
 	assert(err==0);
 	clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
 	kernel = clCreateKernel(program, "v_add", &err);
+	if(err) {
+		char* log_buffer = (char*) malloc(4096);
+		clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG,
+			4096, log_buffer, NULL);
+		puts(log_buffer);
+		free(log_buffer);
+	}
 	error_check(err);
 	
 	
@@ -106,8 +118,8 @@ int main() {
 	close(kernel_fd);
 	// generate array
 	
-#define at_index(ptr, y, x, stride) ptr[x+y*stride]
-	float* const h_arrs = (float*) malloc(bytes);
+
+	VAR_TYPE* const h_arrs = (VAR_TYPE*) malloc(bytes);
 
 	for(int i = 0; i < n; i++) {
 		at_index(h_arrs, 0, i, n) = i + 1;
@@ -116,26 +128,59 @@ int main() {
 
 
 	cl_mem d_arrs = clCreateBuffer(context, CL_MEM_READ_WRITE , bytes, NULL, &err);
-	assert(err==0);
+	error_check(err);
 	err = clEnqueueWriteBuffer(queue, d_arrs, CL_TRUE, 0,
-    	                           bytes, h_arrs, 0, NULL, NULL);
-
+	                               bytes, h_arrs, 0, NULL, NULL);
+	error_check(err);
 	// setting sizeof() to bytes will create a bus error, which is interesting
-	err = clSetKernelArg(kernel, 0, sizeof(float*), &d_arrs);
+	err = clSetKernelArg(kernel, 0, sizeof(VAR_TYPE*), &d_arrs);
 	error_check(err);
 	err = clSetKernelArg(kernel, 1, sizeof(int), &n);
 	error_check(err);
 
-	err  = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, &local_size,
-	                             0, NULL, NULL);
-	error_check(err);
-	err = clEnqueueReadBuffer(queue, d_arrs, CL_TRUE, 0,
-                                bytes, h_arrs, 0, NULL, NULL);
-	assert(err==0);
 	clFinish(queue);
 
+	gettimeofday(&t1, NULL);
+	setup_time =  (t1.tv_sec  - t0.tv_sec)  * 1000.0; // s  to ms
+	setup_time += (t1.tv_usec - t0.tv_usec) / 1000.0; // us to ms
+	puts("executing");
+	gettimeofday(&t0, NULL);
+
+	#pragma omp parallel for schedule(guided,4)
+	for(int i = 0; i < RUNS_GPU; i++)
+		err  = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, &local_size,
+	                             0, NULL, NULL);
+	
+	err = clEnqueueReadBuffer(queue, d_arrs, CL_TRUE, 0,
+	                            bytes, h_arrs, 0, NULL, NULL);
+	clFinish(queue);
+	gettimeofday(&t1, NULL);
+	error_check(err);
+	gpu_time =  (t1.tv_sec  - t0.tv_sec)  * 1000.0; // s  to ms
+	gpu_time += (t1.tv_usec - t0.tv_usec) / 1000.0; // us to ms
+	gpu_time /= RUNS_GPU;
+
 	// first print, for responsive feel
-	printf("%.2f + %.2f = %.2f\n", at_index(h_arrs, 0, 0, n), at_index(h_arrs, 0, 1, n), at_index(h_arrs, 0, 2, n));
+
+	printf("sin%7.2f + cos%7.2f = %7.2f\n", (float)at_index(h_arrs, 0, 0, n), (float)at_index(h_arrs, 1, 0, n), (float)at_index(h_arrs, 2, 0, n));
+
+
+	gettimeofday(&t0, NULL);
+
+	/*#pragma omp parallel for schedule(guided,512)
+	for(int i = 0; i < n; i++)
+		at_index(h_arrs, 2, i, n) = sin(at_index(h_arrs, 0, i, n)) + cos(at_index(h_arrs, 1, i, n));
+	*/
+	gettimeofday(&t1, NULL);
+	cpu_time =  (t1.tv_sec  - t0.tv_sec)  * 1000.0; // s  to ms
+	cpu_time += (t1.tv_usec - t0.tv_usec) / 1000.0; // us to ms
+
+	printf("sin%7.2f + cos%7.2f = %7.2f\n", (float)at_index(h_arrs, 0, 0, n), (float)at_index(h_arrs, 1, 0, n), (float)at_index(h_arrs, 2, 0, n));
+
+
+	puts("\n\n");
+	printf("setup_time =\t%7.2fms\ngpu_time =\t%7.2fms\ncpu_time =\t%7.2fms\n", setup_time, gpu_time, cpu_time);
+
 
 	// then cleanup
 	clReleaseMemObject(d_arrs);
