@@ -13,8 +13,10 @@
 #include <sys/time.h>
 #include <omp.h>
 
-
-
+/*
+	only added the kernel
+	the rest is missing
+*/
 
 void error_check(cl_int err) {
 #define CASE(x) case x: puts(#x); break;
@@ -61,9 +63,10 @@ void error_check(cl_int err) {
 int main() {
 	printf("using type of size %lu\n", sizeof(VAR_TYPE));
 
+	// for performance measurements
 	struct timeval t0, t1;
 	double setup_time, gpu_time, cpu_time;
-	gettimeofday(&t0, NULL);
+	gettimeofday(&t0, NULL); // start stopwatch
 
 	cl_platform_id   platform = NULL;   // OpenCL platform
 	cl_device_id     device_id;  // device ID
@@ -89,35 +92,42 @@ int main() {
 	queue = clCreateCommandQueue(context, device_id, 0, &err);
 	assert(err==0);
 
-	// open kernel file and map to memory
-	int kernel_fd = open(KERNEL_PATH, O_RDONLY, 0);
-	struct stat kernel_source_stat;
-	err = fstat(kernel_fd, &kernel_source_stat);
-	assert(err==0);
-	char* __restrict const kernel_source = (char*) mmap(NULL,
-		kernel_source_stat.st_size, PROT_READ, MAP_PRIVATE, kernel_fd, 0);
+	//		----setup kernel----
+	{
+		// open kernel file and map to memory
+		int kernel_fd = open(KERNEL_PATH, O_RDONLY, 0);
+		struct stat kernel_source_stat;
+		err = fstat(kernel_fd, &kernel_source_stat);
+		assert(err==0);
+		char* __restrict const kernel_source = (char*) mmap(NULL,
+			kernel_source_stat.st_size, PROT_READ, MAP_PRIVATE, kernel_fd, 0);
 
-	program = clCreateProgramWithSource(context, 1,
-	                        (const char **)& kernel_source, NULL, &err);
 
-	assert(err==0);
-	clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
-	kernel = clCreateKernel(program, "v_add", &err);
-	if(err) {
-		char* log_buffer = (char*) malloc(4096);
-		clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG,
-			4096, log_buffer, NULL);
-		puts(log_buffer);
-		free(log_buffer);
+		// let OpenCL make the program
+		program = clCreateProgramWithSource(context, 1,
+		                        (const char **)& kernel_source, NULL, &err);
+
+		assert(err==0);
+		clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+		kernel = clCreateKernel(program, "hash_str", &err);
+		// if something's wrong show the problem
+#ifndef NDEBUG
+		if(err) {
+			char* log_buffer = (char*) malloc(4096);
+			clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG,
+				4096, log_buffer, NULL);
+			puts(log_buffer);
+			free(log_buffer);
+		}
+		error_check(err); // regular error checking shows the exact err code and exit
+#endif
+		// kernel file cleanup
+		munmap(kernel_source, kernel_source_stat.st_size);
+		close(kernel_fd);
 	}
-	error_check(err);
-	
-	
-	// kernel file cleanup
-	munmap(kernel_source, kernel_source_stat.st_size);
-	close(kernel_fd);
-	// generate array
-	
+
+
+	//		----generate array----
 
 	VAR_TYPE* const h_arrs = (VAR_TYPE*) malloc(bytes);
 
@@ -126,10 +136,10 @@ int main() {
 		at_index(h_arrs, 1, i, n) = -i;
 	}
 
-
+	//		----setup device----
 	cl_mem d_arrs = clCreateBuffer(context, CL_MEM_READ_WRITE , bytes, NULL, &err);
 	error_check(err);
-	err = clEnqueueWriteBuffer(queue, d_arrs, CL_TRUE, 0,
+	err = clEnqueueWriteBuffer(queue, d_arrs, CL_FALSE, 0,
 	                               bytes, h_arrs, 0, NULL, NULL);
 	error_check(err);
 	// setting sizeof() to bytes will create a bus error, which is interesting
@@ -138,7 +148,7 @@ int main() {
 	err = clSetKernelArg(kernel, 1, sizeof(int), &n);
 	error_check(err);
 
-	clFinish(queue);
+	clFinish(queue); // setup done, so we start enqueueing the kernel
 
 	gettimeofday(&t1, NULL);
 	setup_time =  (t1.tv_sec  - t0.tv_sec)  * 1000.0; // s  to ms
@@ -146,21 +156,20 @@ int main() {
 	puts("executing");
 	gettimeofday(&t0, NULL);
 
-	#pragma omp parallel for schedule(guided,4)
-	for(int i = 0; i < RUNS_GPU; i++)
-		err  = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, &local_size,
+	//#pragma omp parallel for schedule(guided,4)
+	//for(int i = 0; i < RUNS_GPU; i++)
+	err  = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_size, &local_size,
 	                             0, NULL, NULL);
 	
-	err = clEnqueueReadBuffer(queue, d_arrs, CL_TRUE, 0,
+	err = clEnqueueReadBuffer(queue, d_arrs, CL_FALSE, 0,
 	                            bytes, h_arrs, 0, NULL, NULL);
 	clFinish(queue);
 	gettimeofday(&t1, NULL);
 	error_check(err);
-	gpu_time =  (t1.tv_sec  - t0.tv_sec)  * 1000.0; // s  to ms
+	gpu_time  = (t1.tv_sec  - t0.tv_sec)  * 1000.0; // s  to ms
 	gpu_time += (t1.tv_usec - t0.tv_usec) / 1000.0; // us to ms
-	gpu_time /= RUNS_GPU;
+	gpu_time /= max(RUNS_GPU, 1); // on the off chance that RUNS_GPU = 0
 
-	// first print, for responsive feel
 
 	printf("sin%7.2f + cos%7.2f = %7.2f\n", (float)at_index(h_arrs, 0, 0, n), (float)at_index(h_arrs, 1, 0, n), (float)at_index(h_arrs, 2, 0, n));
 
@@ -182,7 +191,7 @@ int main() {
 	printf("setup_time =\t%7.2fms\ngpu_time =\t%7.2fms\ncpu_time =\t%7.2fms\n", setup_time, gpu_time, cpu_time);
 
 
-	// then cleanup
+	//		----cleanup----
 	clReleaseMemObject(d_arrs);
 	clReleaseProgram(program);
 	clReleaseKernel(kernel);
