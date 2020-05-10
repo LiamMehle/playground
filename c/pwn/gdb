@@ -1,0 +1,11 @@
+set disassembly-flavor intel
+b *(main+44)
+
+define hook-stop
+disass
+end
+
+r
+echo <<--buffer canary-->>
+p $rdx
+d 1
