@@ -8,11 +8,11 @@ CFLAGS= -Os -mmcu=atmega328p -Wall -Wpedantic
 #CFLAGS+= -nostartfiles -nostdlib
 
 # compiling 
-all : disassemble.blink install.blink preproc.blink
+all : install.blink disassemble.blink preproc.blink
 
 # detect what port my adruino is on
 
-USBPORT:=$(shell ls /dev/ttyUSB*)
+USBPORT=$(shell ls /dev/ttyUSB*)
 
 %.out : %.c 
 	$(CC) $(CFLAGS) $< -o $@
@@ -21,16 +21,17 @@ USBPORT:=$(shell ls /dev/ttyUSB*)
 	avr-objcopy -O ihex -R .eeprom $< $@
 
 preproc.% : %.c
-	$(CC) $(CFLAGS) -E $< -o blink.c 2>/dev/null; sleep 0
-
-disassemble.% : %.hex %.c
-	avr-objdump --visualize-jumps -m avr -D $< > blink.s
+	$(CC) $(CFLAGS) -E $< -o blink.c 1>/dev/null; sleep 0
 
 install.%: %.hex erase
 	sudo avrdude -F -V -c arduino -p ATMEGA328P -P ${USBPORT} -b 115200 -U flash:w:$<
 
 erase:
 	sudo avrdude -e -V -c arduino -p ATMEGA328P -P ${USBPORT} -b 115200
+
+disassemble.% : %.hex %.c
+	avr-objdump --visualize-jumps -m avr -D $< > blink.s
+
 
 clean:
 	find . -type f | grep -P '.*\.hex' | xargs -P 1024 -Ii rm -f i ; sleep 0

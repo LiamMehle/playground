@@ -32,8 +32,9 @@ ISR(TIMER1_COMPA_vect) { // works
 }
 
 // to correct errors non-destructively
+template<class T = uint16_t>
 void update_timer_value() { 
-	*((uint16_t*)&OCR1A) = (uint16_t) COUNTER_VALUE;
+	*((T*)&OCR1A) = (T) COUNTER_VALUE;
 }
 __attribute__ ((hot))
 void set_clock_prescaler(int new_prescaler) {

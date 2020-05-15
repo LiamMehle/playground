@@ -2,13 +2,10 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "./src/blink.c"
-# 13 "./src/blink.c"
-# 1 "/usr/avr/include/avr/io.h" 1 3
-# 99 "/usr/avr/include/avr/io.h" 3
-# 1 "/usr/avr/include/avr/sfr_defs.h" 1 3
-# 126 "/usr/avr/include/avr/sfr_defs.h" 3
-# 1 "/usr/avr/include/inttypes.h" 1 3
-# 37 "/usr/avr/include/inttypes.h" 3
+
+
+
+
 # 1 "/usr/lib/gcc/avr/9.2.0/include/stdint.h" 1 3 4
 # 9 "/usr/lib/gcc/avr/9.2.0/include/stdint.h" 3 4
 # 1 "/usr/avr/include/stdint.h" 1 3 4
@@ -123,7 +120,18 @@ typedef int64_t intmax_t;
 
 typedef uint64_t uintmax_t;
 # 10 "/usr/lib/gcc/avr/9.2.0/include/stdint.h" 2 3 4
-# 38 "/usr/avr/include/inttypes.h" 2 3
+# 6 "./src/blink.c" 2
+
+# 6 "./src/blink.c"
+uint8_t clk_prescaler;
+# 18 "./src/blink.c"
+# 1 "/usr/avr/include/avr/io.h" 1 3
+# 99 "/usr/avr/include/avr/io.h" 3
+# 1 "/usr/avr/include/avr/sfr_defs.h" 1 3
+# 126 "/usr/avr/include/avr/sfr_defs.h" 3
+# 1 "/usr/avr/include/inttypes.h" 1 3
+# 77 "/usr/avr/include/inttypes.h" 3
+
 # 77 "/usr/avr/include/inttypes.h" 3
 typedef int32_t int_farptr_t;
 
@@ -163,412 +171,203 @@ typedef struct
 
 # 1 "/usr/avr/include/avr/lock.h" 1 3
 # 600 "/usr/avr/include/avr/io.h" 2 3
-# 14 "./src/blink.c" 2
-# 1 "/usr/avr/include/util/delay.h" 1 3
-# 45 "/usr/avr/include/util/delay.h" 3
-# 1 "/usr/avr/include/util/delay_basic.h" 1 3
-# 40 "/usr/avr/include/util/delay_basic.h" 3
-static __inline__ void _delay_loop_1(uint8_t __count) __attribute__((__always_inline__));
-static __inline__ void _delay_loop_2(uint16_t __count) __attribute__((__always_inline__));
-# 80 "/usr/avr/include/util/delay_basic.h" 3
-void
-_delay_loop_1(uint8_t __count)
-{
- __asm__ volatile (
-  "1: dec %0" "\n\t"
-  "brne 1b"
-  : "=r" (__count)
-  : "0" (__count)
- );
-}
-# 102 "/usr/avr/include/util/delay_basic.h" 3
-void
-_delay_loop_2(uint16_t __count)
-{
- __asm__ volatile (
-  "1: sbiw %0,1" "\n\t"
-  "brne 1b"
-  : "=w" (__count)
-  : "0" (__count)
- );
-}
-# 46 "/usr/avr/include/util/delay.h" 2 3
-# 1 "/usr/avr/include/math.h" 1 3
-# 127 "/usr/avr/include/math.h" 3
-extern double cos(double __x) __attribute__((__const__));
+# 19 "./src/blink.c" 2
 
-
-
-
-
-extern double sin(double __x) __attribute__((__const__));
-
-
-
-
-
-extern double tan(double __x) __attribute__((__const__));
-
-
-
-
-
-
-extern double fabs(double __x) __attribute__((__const__));
-
-
-
-
-
-
-extern double fmod(double __x, double __y) __attribute__((__const__));
-# 168 "/usr/avr/include/math.h" 3
-extern double modf(double __x, double *__iptr);
-
-
-extern float modff (float __x, float *__iptr);
-
-
-
-
-extern double sqrt(double __x) __attribute__((__const__));
-
-
-extern float sqrtf (float) __attribute__((__const__));
-
-
-
-
-extern double cbrt(double __x) __attribute__((__const__));
-# 195 "/usr/avr/include/math.h" 3
-extern double hypot (double __x, double __y) __attribute__((__const__));
-
-
-
-
-
-
-
-extern double square(double __x) __attribute__((__const__));
-
-
-
-
-
-
-extern double floor(double __x) __attribute__((__const__));
-
-
-
-
-
-
-extern double ceil(double __x) __attribute__((__const__));
-# 235 "/usr/avr/include/math.h" 3
-extern double frexp(double __x, int *__pexp);
-
-
-
-
-
-
-
-extern double ldexp(double __x, int __exp) __attribute__((__const__));
-
-
-
-
-
-extern double exp(double __x) __attribute__((__const__));
-
-
-
-
-
-extern double cosh(double __x) __attribute__((__const__));
-
-
-
-
-
-extern double sinh(double __x) __attribute__((__const__));
-
-
-
-
-
-extern double tanh(double __x) __attribute__((__const__));
-
-
-
-
-
-
-
-extern double acos(double __x) __attribute__((__const__));
-
-
-
-
-
-
-
-extern double asin(double __x) __attribute__((__const__));
-
-
-
-
-
-
-extern double atan(double __x) __attribute__((__const__));
-# 299 "/usr/avr/include/math.h" 3
-extern double atan2(double __y, double __x) __attribute__((__const__));
-
-
-
-
-
-extern double log(double __x) __attribute__((__const__));
-
-
-
-
-
-extern double log10(double __x) __attribute__((__const__));
-
-
-
-
-
-extern double pow(double __x, double __y) __attribute__((__const__));
-
-
-
-
-
-
-extern int isnan(double __x) __attribute__((__const__));
-# 334 "/usr/avr/include/math.h" 3
-extern int isinf(double __x) __attribute__((__const__));
-
-
-
-
-
-
-__attribute__((__const__)) static inline int isfinite (double __x)
-{
-    unsigned char __exp;
-    __asm__ (
- "mov	%0, %C1		\n\t"
- "lsl	%0		\n\t"
- "mov	%0, %D1		\n\t"
- "rol	%0		"
- : "=r" (__exp)
- : "r" (__x) );
-    return __exp != 0xff;
-}
-
-
-
-
-
-
-__attribute__((__const__)) static inline double copysign (double __x, double __y)
-{
-    __asm__ (
- "bst	%D2, 7	\n\t"
- "bld	%D0, 7	"
- : "=r" (__x)
- : "0" (__x), "r" (__y) );
-    return __x;
-}
-# 377 "/usr/avr/include/math.h" 3
-extern int signbit (double __x) __attribute__((__const__));
-
-
-
-
-
-
-extern double fdim (double __x, double __y) __attribute__((__const__));
-# 393 "/usr/avr/include/math.h" 3
-extern double fma (double __x, double __y, double __z) __attribute__((__const__));
-
-
-
-
-
-
-
-extern double fmax (double __x, double __y) __attribute__((__const__));
-
-
-
-
-
-
-
-extern double fmin (double __x, double __y) __attribute__((__const__));
-
-
-
-
-
-
-extern double trunc (double __x) __attribute__((__const__));
-# 427 "/usr/avr/include/math.h" 3
-extern double round (double __x) __attribute__((__const__));
-# 440 "/usr/avr/include/math.h" 3
-extern long lround (double __x) __attribute__((__const__));
-# 454 "/usr/avr/include/math.h" 3
-extern long lrint (double __x) __attribute__((__const__));
-# 47 "/usr/avr/include/util/delay.h" 2 3
-# 86 "/usr/avr/include/util/delay.h" 3
-static __inline__ void _delay_us(double __us) __attribute__((__always_inline__));
-static __inline__ void _delay_ms(double __ms) __attribute__((__always_inline__));
-# 165 "/usr/avr/include/util/delay.h" 3
-void
-_delay_ms(double __ms)
-{
- double __tmp ;
-
-
-
- uint32_t __ticks_dc;
- extern void __builtin_avr_delay_cycles(unsigned long);
- __tmp = ((
-# 174 "/usr/avr/include/util/delay.h"
-          (15998976 >> 0x08)
-# 174 "/usr/avr/include/util/delay.h" 3
-               ) / 1e3) * __ms;
-# 184 "/usr/avr/include/util/delay.h" 3
-  __ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
-
-
- __builtin_avr_delay_cycles(__ticks_dc);
-# 210 "/usr/avr/include/util/delay.h" 3
-}
-# 254 "/usr/avr/include/util/delay.h" 3
-void
-_delay_us(double __us)
-{
- double __tmp ;
-
-
-
- uint32_t __ticks_dc;
- extern void __builtin_avr_delay_cycles(unsigned long);
- __tmp = ((
-# 263 "/usr/avr/include/util/delay.h"
-          (15998976 >> 0x08)
-# 263 "/usr/avr/include/util/delay.h" 3
-               ) / 1e6) * __us;
-# 273 "/usr/avr/include/util/delay.h" 3
-  __ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
-
-
- __builtin_avr_delay_cycles(__ticks_dc);
-# 299 "/usr/avr/include/util/delay.h" 3
-}
-# 15 "./src/blink.c" 2
 # 1 "/usr/avr/include/avr/interrupt.h" 1 3
-# 16 "./src/blink.c" 2
-# 56 "./src/blink.c"
+# 21 "./src/blink.c" 2
+# 30 "./src/blink.c"
 void __vector_11 (void) __attribute__ ((signal,used, externally_visible)) ; void __vector_11 (void) 
-# 56 "./src/blink.c"
+# 30 "./src/blink.c"
                       {
  
-# 57 "./src/blink.c" 3
+# 31 "./src/blink.c" 3
 (*(volatile uint8_t *)((0x05) + 0x20)) 
-# 57 "./src/blink.c"
+# 31 "./src/blink.c"
       ^= 1<<5;
+}
+
+
+void update_timer_value() {
+ *((uint16_t*)&
+# 36 "./src/blink.c" 3
+              (*(volatile uint16_t *)(0x88))
+# 36 "./src/blink.c"
+                   ) = (uint16_t) ((15998976 >> clk_prescaler) >> 10)/20;
+}
+__attribute__ ((hot))
+void set_clock_prescaler(int new_prescaler) {
+ clk_prescaler = new_prescaler;
+ __asm__ volatile (
+  "sts %0, %1\n"
+  "sts %0, %2\n"
+  :: "n" (&
+# 44 "./src/blink.c" 3
+          (*(volatile uint8_t *)(0x61))
+# 44 "./src/blink.c"
+               ), "r" ((uint8_t)1<<
+# 44 "./src/blink.c" 3
+                                   7
+# 44 "./src/blink.c"
+                                         ), "r" ((uint8_t)new_prescaler) : "r20", "r21");
+ update_timer_value();
+
+ 
+# 47 "./src/blink.c" 3
+(*(volatile uint8_t *)(0xC5)) 
+# 47 "./src/blink.c"
+       = (uint8_t) (((15998976 >> clk_prescaler)/(16*115200)-1) << clk_prescaler) >> 8;
+ 
+# 48 "./src/blink.c" 3
+(*(volatile uint8_t *)(0xC4)) 
+# 48 "./src/blink.c"
+       = (uint8_t) ((15998976 >> clk_prescaler)/(16*115200)-1) << clk_prescaler;
+}
+
+__attribute__ ((cold))
+__attribute__ ((unused))
+void usart_init() {
+
+
+
+
+
+ 
+# 59 "./src/blink.c" 3
+(*(volatile uint8_t *)(0xC5)) 
+# 59 "./src/blink.c"
+       = (uint8_t) 0x0f & ((((15998976 >> clk_prescaler)/(16*115200)-1) << clk_prescaler) >> 8);
+ 
+# 60 "./src/blink.c" 3
+(*(volatile uint8_t *)(0xC4)) 
+# 60 "./src/blink.c"
+       = (uint8_t) ((15998976 >> clk_prescaler)/(16*115200)-1) << clk_prescaler;
+
+}
+
+__attribute__ ((hot))
+__attribute__ ((unused))
+inline int transmit_complete(char c) {
+ return 
+# 67 "./src/blink.c" 3
+       (*(volatile uint8_t *)(0xC0)) 
+# 67 "./src/blink.c"
+              & 
+# 67 "./src/blink.c" 3
+                6
+# 67 "./src/blink.c"
+                    ;
+}
+
+__attribute__ ((hot))
+__attribute__ ((unused))
+void put_char(char c) {
+ while( !(
+# 73 "./src/blink.c" 3
+         (*(volatile uint8_t *)(0xC0)) 
+# 73 "./src/blink.c"
+                & 
+# 73 "./src/blink.c" 3
+                  (1 << (5))
+# 73 "./src/blink.c"
+                            ) );
+ 
+# 74 "./src/blink.c" 3
+(*(volatile uint8_t *)(0xC6)) 
+# 74 "./src/blink.c"
+     = c;
+ return;
 }
 
 int main(void) {
 
- __asm__ volatile (
+ set_clock_prescaler(8);
 
-  "sts %0, %1\n"
-  "sts %0, %2\n"
-  :: "n" (&
-# 66 "./src/blink.c" 3
-          (*(volatile uint8_t *)(0x61))
-# 66 "./src/blink.c"
-               ), "r" ((uint8_t)1<<
-# 66 "./src/blink.c" 3
-                                   7
-# 66 "./src/blink.c"
-                                         ), "r" ((uint8_t)0x08) : "r20", "r21");
+ 
+# 82 "./src/blink.c" 3
+__asm__ __volatile__ ("cli" ::: "memory")
+# 82 "./src/blink.c"
+     ;
+
+
 
 
  ( 
-# 69 "./src/blink.c" 3
+# 87 "./src/blink.c" 3
 (*(volatile uint8_t *)((0x04) + 0x20)) 
-# 69 "./src/blink.c"
+# 87 "./src/blink.c"
 |= 1<<1<<5 );
 
- *((uint16_t*)&
-# 71 "./src/blink.c" 3
-              (*(volatile uint16_t *)(0x88))
-# 71 "./src/blink.c"
-                   ) = (uint16_t) ((15998976 >> 0x08) >> 10)/20;
+
+
+
+
  
-# 72 "./src/blink.c" 3
+# 93 "./src/blink.c" 3
 (*(volatile uint8_t *)(0x80)) 
-# 72 "./src/blink.c"
-        = 0x00;
-# 82 "./src/blink.c"
+# 93 "./src/blink.c"
+       = 0x00;
  
-# 82 "./src/blink.c" 3
+# 94 "./src/blink.c" 3
 (*(volatile uint8_t *)(0x81)) 
-# 82 "./src/blink.c"
+# 94 "./src/blink.c"
        = 0x00 | 
-# 82 "./src/blink.c" 3
+# 94 "./src/blink.c" 3
                 (1 << (3)) 
-# 82 "./src/blink.c"
+# 94 "./src/blink.c"
                            | 
-# 82 "./src/blink.c" 3
+# 94 "./src/blink.c" 3
                              (1 << (0)) 
-# 82 "./src/blink.c"
+# 94 "./src/blink.c"
                                        | 
-# 82 "./src/blink.c" 3
+# 94 "./src/blink.c" 3
                                          (1 << (2))
-# 82 "./src/blink.c"
+# 94 "./src/blink.c"
                                                   ;
 
 
 
  ( 
-# 86 "./src/blink.c" 3
+# 98 "./src/blink.c" 3
 (*(volatile uint8_t *)(0x6F)) 
-# 86 "./src/blink.c"
+# 98 "./src/blink.c"
 |= 1<<
-# 86 "./src/blink.c" 3
+# 98 "./src/blink.c" 3
 1 
-# 86 "./src/blink.c"
+# 98 "./src/blink.c"
 );
  ( 
-# 87 "./src/blink.c" 3
+# 99 "./src/blink.c" 3
 (*(volatile uint8_t *)((0x16) + 0x20)) 
-# 87 "./src/blink.c"
+# 99 "./src/blink.c"
 |= 1<<
-# 87 "./src/blink.c" 3
+# 99 "./src/blink.c" 3
 1 
-# 87 "./src/blink.c"
+# 99 "./src/blink.c"
 );
 
 
 
  
-# 91 "./src/blink.c" 3
+# 103 "./src/blink.c" 3
+__asm__ __volatile__ ("sei" ::: "memory")
+# 103 "./src/blink.c"
+     ;
+
+
+
+ 
+# 107 "./src/blink.c" 3
 (*(volatile uint8_t *)(0x64)) 
-# 91 "./src/blink.c"
-    = 0xff & ~
-# 91 "./src/blink.c" 3
-              (1 << (3))
-# 91 "./src/blink.c"
-                         ;
+# 107 "./src/blink.c"
+    = 0xff & ~(
+# 107 "./src/blink.c" 3
+               (1 << (3)) 
+# 107 "./src/blink.c"
+                           | 
+# 107 "./src/blink.c" 3
+                             (1 << (1))
+# 107 "./src/blink.c"
+                                          );
 
 
 
@@ -576,26 +375,28 @@ int main(void) {
 
 
  
-# 98 "./src/blink.c" 3
+# 114 "./src/blink.c" 3
 (*(volatile uint8_t *)((0x33) + 0x20)) 
-# 98 "./src/blink.c"
-     = 0X00 | 
-# 98 "./src/blink.c" 3
+# 114 "./src/blink.c"
+     = 0x00 | 
+# 114 "./src/blink.c" 3
               (1 << (0))
-# 98 "./src/blink.c"
+# 114 "./src/blink.c"
                      ;
 
 
 
 
 
- 
-# 104 "./src/blink.c" 3
-__asm__ __volatile__ ("sei" ::: "memory")
-# 104 "./src/blink.c"
-     ;
+
+
+ usart_init();
+
+
+
 
  while(1) {
-  __asm__ volatile ("sleep\n");
+
+
  }
 }
