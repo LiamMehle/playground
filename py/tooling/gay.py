@@ -1,6 +1,6 @@
 import sys
 
-version = '1.1.4'
+version = '1.2.2'
 
 def print_usage():
 	print(f'usage: python {__file__} [args] string_to_convert')
@@ -17,6 +17,8 @@ the gay-ass font requested by whoever bugged the programmer to help with the tas
 	print('                \t--interactive')
 	print('read from file  \t-f')
 	print('                \t--file')
+	print('select font     \t-o[font number]')
+	print('                \t--font')
 
 if len(sys.argv) <= 1:
 	print_usage()
@@ -31,8 +33,6 @@ while True:
 		strings_start += 1
 	else:
 		break
-
-offset = 120042 - 97
 
 def convert_char(c):
 	code = ord(c)
@@ -76,6 +76,17 @@ for i, string in enumerate(sys.argv):
 				converted_str += convert_char(str[i])
 			print(converted_str)
 
+	font_offset = 119990
+	if '-o' in string or \
+	   '--font' in string:
+		if '1' in string:
+			font_offset = 119990
+		if '2' in string:
+			font_offset = 120042
+
+	offset = font_offset - 97
+
+
 
 
 # lowercase a start offset
@@ -83,8 +94,11 @@ for i, string in enumerate(sys.argv):
 for i, string in enumerate(sys.argv):
 	if i < strings_start:
 		continue
+	if 'liam' in string.lower():
+		print('I\'m gay')
+		quit()
 	for c in string:
-		print(convert_char(c), end='')
+		oprint(convert_char(c), end='')
 	
 	print(' ', end='')
 
