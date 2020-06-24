@@ -1,4 +1,0 @@
-file ret0
-b _start
-set disassembly-flavor intel
-layout asm

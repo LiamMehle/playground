@@ -2,7 +2,7 @@
 #define IO_HELPER_H
 #include <iostream>
 
-#define LOG_VAR(x) (std::cout << #x << " = " << x << std::endl)
+#define LOG_VAR( var ) ( std::cout << #var << " = " << var << std::endl )
 
 
 #endif

@@ -1,74 +1,92 @@
-#include <iostream>
-#include <array>
-#include <stdlib.h>
+#include <arpa/inet.h>
+#include <stdio.h>
+#include <sys/socket.h>
 #include <unistd.h>
-#include <string.h>
 #include <errno.h>
 
-#include <fcntl.h>
+#ifndef ADDRESS
+#define ADDRESS "172.217.22.110"
+#endif
 
-#include <arpa/inet.h>
-#include <sys/socket.h>
-//#include <sys/ioctl.h>
-//#include <netdb.h>
-//#include <linux/in.h>
+#ifndef PORT
+#define PORT 80
+#endif
 
-#define SERVER_PORT 80
-#define MAXLINE     4096
+#define PAGE 4096
 
-#define SA struct sockaddr
+int main(int argc, char** argv, char** env) {
+	int                ret = 0;
+	int                conn_fd;
+	struct sockaddr_in server_addr = { 0 };
 
-void error( const char* msg = "generic error") {
-	std::cout << msg << std::endl;
-	std::exit(2);
-}
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(PORT);
 
-int main( int argc, const char** argv ) {
-	int sockfd, n;
-	int sendbytes;
-	struct sockaddr_in servaddr;
-	std::array<char, MAXLINE> sendline;
-	std::array<char, MAXLINE> recvline;
-	const char* default_addr_str = "172.217.16.206";
-	std::array<char, 12> addr_str;
-	addr_str[addr_str.size()] = '\0';
-
-
-	if( argc < 2 ) {
-		strcpy(addr_str.begin(), default_addr_str);
-	} else {
-		strncpy(addr_str.begin(), argv[1], 11);
+	ret = inet_pton(AF_INET, ADDRESS, &server_addr.sin_addr);
+	if (ret != 1) {
+		if (ret == -1) {
+			perror("inet_pton");
+		}
+		fprintf(stderr,
+		        "failed to convert address %s "
+		        "to binary net address\n",
+		        ADDRESS);
+		return errno;
 	}
 
-	if( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
-		error("could not create a socket");
+	fprintf(stdout, "CONNECTING: address=%s port=%d\n", ADDRESS, PORT);
+	conn_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	bzero(&servaddr, sizeof(servaddr));
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_family = htons(SERVER_PORT);
-
-	if( inet_pton(AF_INET, addr_str.begin(), &servaddr.sin_addr ) <= 0)
-		error("inet_pton error for given string");
-
-	if( connect(sockfd, reinterpret_cast<SA*>(&servaddr), sizeof(servaddr)) < 0 ) {
-		error("failed to connect");
+	if (conn_fd == -1) {
+		perror("socket");
+		return errno;
 	}
 
-	
-	// setting up GET request
-	sendbytes = sprintf(sendline.begin(), "GET / HTTP/1.1\r\n\r\n");
-
-	if ( (write(sockfd, sendline.begin(), sendbytes)) !=  sendbytes)
-		error("write failiure");
-
-	// bzero(recvline.begin(), 0, recvline.length());
-
-	// write
-	while( (n = read(sockfd, recvline.begin(), MAXLINE-1)) > 0) {
-		write(1, recvline.begin(), n);
+	ret = connect(conn_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));
+	if (ret == -1) {
+		perror("connect");
+		return errno;
 	}
-	if (n < 0)
-		error("read failiure");
+
+	{ // sending bytes
+		char buf[] = "GET / HTTP/1.0\r\n\r\n";
+		ret = write(conn_fd, buf, sizeof(buf));
+		if( ret == -1 )
+			perror("sending bytes");
+		if( ret != sizeof(buf) )
+			fprintf(stderr, "size of message is %ld, but sent %d\n", sizeof(buf), ret);
+	}
+	{
+		unsigned long bytes_read = 0;
+		char buf[PAGE];
+		ret = read(conn_fd, buf, PAGE);
+		do {
+			switch(ret) {
+				case -1:
+					fprintf(stderr, "failed to read");
+					break;
+				case 0:
+					fprintf(stderr, "read 0 bytes");
+					break;
+				default:
+					write(1, buf, ret);
+					bytes_read += ret;
+			}
+		} while(ret == PAGE);
+		printf("\nRX bytes = %lu\n", bytes_read);
+	}
+
+	ret = shutdown(conn_fd, SHUT_RDWR);
+	if (ret == -1) {
+		perror("shutdown");
+		return errno;
+	}
+
+	ret = close(conn_fd);
+	if (ret == -1) {
+		perror("close");
+		return errno;
+	}
 
 	return 0;
 }

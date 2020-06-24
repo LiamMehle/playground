@@ -1,0 +1,160 @@
+
+;; Function _main (_main, funcdef_no=0, decl_uid=4385, cgraph_uid=1, symbol_order=0) (executed once)
+
+__attribute__((noreturn, used, flatten))
+_main ()
+{
+;;   basic block 2, loop depth 0
+;;    pred:       ENTRY
+  write (1, "hello, there.", 8);
+  __asm__ __volatile__("syscall" :  : "D" 2, "a" 60);
+  __builtin_unreachable ();
+;;    succ:      
+
+}
+
+
+
+Partition map 
+
+
+
+Coalescible Partition map 
+
+
+After Coalescing:
+
+Partition map 
+
+
+__attribute__((noreturn, used, flatten))
+_main ()
+{
+;;   basic block 2, loop depth 0
+;;    pred:       ENTRY
+  write (1, "hello, there.", 8);
+  __asm__ __volatile__("syscall" :  : "D" 2, "a" 60);
+  __builtin_unreachable ();
+;;    succ:      
+
+}
+
+
+
+;; Generating RTL for gimple basic block 2
+
+;; write (1, "hello, there.", 8);
+
+(insn 5 4 6 (set (reg:DI 1 dx)
+        (const_int 8 [0x8])) "./src/main.cpp":10:7 -1
+     (nil))
+
+(insn 6 5 7 (set (reg:DI 4 si)
+        (symbol_ref/f:DI ("*.LC0") [flags 0x2]  <var_decl 0x7f25f4297e10 *.LC0>)) "./src/main.cpp":10:7 -1
+     (nil))
+
+(insn 7 6 8 (set (reg:SI 5 di)
+        (const_int 1 [0x1])) "./src/main.cpp":10:7 -1
+     (nil))
+
+(call_insn 8 7 0 (set (reg:DI 0 ax)
+        (call (mem:QI (symbol_ref:DI ("write") [flags 0x41]  <function_decl 0x7f25f35f3d00 write>) [0 write S1 A8])
+            (const_int 0 [0]))) "./src/main.cpp":10:7 -1
+     (expr_list:REG_CALL_DECL (symbol_ref:DI ("write") [flags 0x41]  <function_decl 0x7f25f35f3d00 write>)
+        (nil))
+    (expr_list:SI (use (reg:SI 5 di))
+        (expr_list:DI (use (reg:DI 4 si))
+            (expr_list:DI (use (reg:DI 1 dx))
+                (nil)))))
+
+;; __asm__ __volatile__("syscall" :  : "D" 2, "a" 60);
+
+(insn 9 8 10 (set (reg:SI 82)
+        (const_int 2 [0x2])) "./src/main.cpp":11:2 -1
+     (nil))
+
+(insn 10 9 11 (set (reg:SI 83)
+        (const_int 60 [0x3c])) "./src/main.cpp":11:2 -1
+     (nil))
+
+(insn 11 10 0 (parallel [
+            (asm_operands/v ("syscall") ("") 0 [
+                    (reg:SI 82)
+                    (reg:SI 83)
+                ]
+                 [
+                    (asm_input:SI ("D") ./src/main.cpp:11)
+                    (asm_input:SI ("a") ./src/main.cpp:11)
+                ]
+                 [] ./src/main.cpp:11)
+            (clobber (reg:CC 17 flags))
+        ]) "./src/main.cpp":11:2 -1
+     (nil))
+
+;; __builtin_unreachable ();
+
+(barrier 12 11 0)
+deleting block 4
+
+
+try_optimize_cfg iteration 1
+
+Merging block 3 into block 2...
+Merged blocks 2 and 3.
+Merged 2 and 3 without moving.
+
+
+try_optimize_cfg iteration 2
+
+fix_loop_structure: fixing up loops for function
+
+
+;;
+;; Full RTL generated for this function:
+;;
+(note 1 0 3 NOTE_INSN_DELETED)
+;; basic block 2, loop depth 0, count 1073741824 (estimated locally), maybe hot
+;;  prev block 0, next block 1, flags: (NEW, REACHABLE, RTL, VISITED)
+;;  pred:       ENTRY [always]  count:1073741824 (estimated locally) (FALLTHRU)
+(note 3 1 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
+(note 2 3 5 2 NOTE_INSN_FUNCTION_BEG)
+(insn 5 2 6 2 (set (reg:DI 1 dx)
+        (const_int 8 [0x8])) "./src/main.cpp":10:7 -1
+     (nil))
+(insn 6 5 7 2 (set (reg:DI 4 si)
+        (symbol_ref/f:DI ("*.LC0") [flags 0x2]  <var_decl 0x7f25f4297e10 *.LC0>)) "./src/main.cpp":10:7 -1
+     (nil))
+(insn 7 6 8 2 (set (reg:SI 5 di)
+        (const_int 1 [0x1])) "./src/main.cpp":10:7 -1
+     (nil))
+(call_insn 8 7 9 2 (set (reg:DI 0 ax)
+        (call (mem:QI (symbol_ref:DI ("write") [flags 0x41]  <function_decl 0x7f25f35f3d00 write>) [0 write S1 A8])
+            (const_int 0 [0]))) "./src/main.cpp":10:7 -1
+     (expr_list:REG_CALL_DECL (symbol_ref:DI ("write") [flags 0x41]  <function_decl 0x7f25f35f3d00 write>)
+        (nil))
+    (expr_list:SI (use (reg:SI 5 di))
+        (expr_list:DI (use (reg:DI 4 si))
+            (expr_list:DI (use (reg:DI 1 dx))
+                (nil)))))
+(insn 9 8 10 2 (set (reg:SI 82)
+        (const_int 2 [0x2])) "./src/main.cpp":11:2 -1
+     (nil))
+(insn 10 9 11 2 (set (reg:SI 83)
+        (const_int 60 [0x3c])) "./src/main.cpp":11:2 -1
+     (nil))
+(insn 11 10 12 2 (parallel [
+            (asm_operands/v ("syscall") ("") 0 [
+                    (reg:SI 82)
+                    (reg:SI 83)
+                ]
+                 [
+                    (asm_input:SI ("D") ./src/main.cpp:11)
+                    (asm_input:SI ("a") ./src/main.cpp:11)
+                ]
+                 [] ./src/main.cpp:11)
+            (clobber (reg:CC 17 flags))
+        ]) "./src/main.cpp":11:2 -1
+     (nil))
+;;  succ:      
+
+(barrier 12 11 0)

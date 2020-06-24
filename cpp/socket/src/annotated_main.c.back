@@ -1,0 +1,168 @@
+/**
+ * Start by specifying our dependencies.
+ *
+ * As we're using only standard dependencies you'd find in a
+ * Linux machine, these can be found under `/usr/include`.
+ *
+ * - `stdio.h` gives us the standard io (input and output) methods
+ *   like `fprintf` that allows us to format a given string and
+ *   write it to a specific file descriptor (usually stderr or
+ *   stdout).
+ *
+ * - `unistd.h` defines constants, types and methods that provides
+ *   access to the POSIX API. Here we make use of the `close(2)`
+ *   syscall definition that can be found there.
+ *
+ * - `arpa/inet` provides definitions for internet operations, most
+ *   notably, it gives us ways of converting addresses from string
+ *   formats (presentation) to numeric ones (and vice-versa).
+ *
+ *   Given that `arpa/inet` includes `netinet/in.h`, it also provides
+ *   us with the definitions of `sockaddr_in`, the structure used
+ *   to define internet addresses.
+ *
+ * - `sys/socket.h` provides us the `socket(2)` syscall and its
+ *   necessary definitions.
+ */
+#include <arpa/inet.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <errno.h>
+
+/**
+ * ADDRESS defines the IP of the server that we should
+ * connect to.
+ *
+ * In this exampe, it must be a standard IPV4 address with
+ * four octects representing the IP in a string format -
+ * no names are allowed given that we don't perform name
+ * resolution.
+ *
+ * Using GCC, this value can be specified by using the
+ * -D arguments with the address itself having escaped
+ *  quotes (for instance: -DADDRESS=\"127.0.0.1\"). Without
+ *  the escaping, `127.0.0.1` would be supplied instead of
+ *  `"127.0.0.1"`, causing errors.
+ */
+#ifndef ADDRESS
+#define ADDRESS "1.1.1.1"
+#endif
+
+/**
+ * PORT represents the server port we want to connect to.
+ *
+ * Naturally, it must live in the range of [1,65k).
+ */
+#ifndef PORT
+#define PORT 8000
+#endif
+
+int main() {
+	int                ret = 0;
+	int                conn_fd;
+	struct sockaddr_in server_addr = { 0 };
+
+	// Specifiy the communication domain in which the address lives:
+	// AF_INET      - IPV4;
+	// AF_INET6     - IPV6;
+	// AF_UNIX      - Local communication (used w/ unix sockets).
+	server_addr.sin_family = AF_INET;
+
+	// Assign the port that we supplied in host byte order in the
+	// form of network byte order (`htons` performs the conversion).
+	//
+	// On amd64 (x86-64), the byte ordering of the host is little endian
+	// (o.e., the least significant byte comes first).
+	//
+	// However, when it comes to networking, the byte ordering is big
+	// endian - the most significant byte comes first.
+	//
+	// This means that a value (like 8000) defined in our machine needs
+	// to be properly translated to the network byte order before being
+	// sent.
+	server_addr.sin_port = htons(PORT);
+
+	// Fill the destination address with a 4-byte (32bit) unsigned integer
+	// in network byte order after converting the address from the string
+	// representation (e.g., "127.0.0.1").
+	//
+	// Given that we might see a failure in the conversion (e.g., if we
+	// supply an invalid server_addr pointer or an invalid string), check
+	// for these errors.
+	//
+	// Note that differently from the majority of syscalls and glibc
+	// methods, success is defined with `1`, and not `0`. The information of
+	// what represents success can often be found in man pages - e.g., `man
+	// inet_pton`.
+	ret = inet_pton(AF_INET, ADDRESS, &server_addr.sin_addr);
+	if (ret != 1) {
+		if (ret == -1) {
+			perror("inet_pton");
+		}
+		fprintf(stderr,
+		        "failed to convert address %s "
+		        "to binary net address\n",
+		        ADDRESS);
+		return -1;
+	}
+
+	fprintf(stdout, "CONNECTING: address=%s port=%d\n", ADDRESS, PORT);
+
+	// Create an endpoint for communication in our machine (our side) that
+	// is meant to communicate over the AF_INET (IPv4) domain, using
+	// SOCK_STREAM semantics (sequenced, reliable, two-way, connection-base
+	// byte streams - TCP, for instance).
+	//
+	// Note that at this point, no communication has been made to an
+	// external server yet - this operation is entirely local.
+	conn_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (conn_fd == -1) {
+		perror("socket");
+		return -1;
+	}
+
+	// Connect our local endpoint (represented by the socket file
+	// descriptor) to the address specified by `server_addr`.
+	//
+	// On a TCP connection, `connect` passes to the kernel the
+	// responsability of perming the TCP handshake, blocking the call while
+	// the kernel goes forward (when nonblocking flag - SOCK_NONBLOCK - is
+	// not set in the socket).
+	//
+	// Once the handshake has been succesful, on the server side the
+	// connection is then put into a queue so that the server can
+	// `accept(2)` on a passive socket to make use of such established
+	// connection.
+	ret =
+	  connect(conn_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));
+	if (ret == -1) {
+		perror("connect");
+		return errno;
+	}
+
+	// After the connection has been properly established, we could go
+	// forward with `read(2)` and `write(2)` calls.
+	//
+	// As in this example we don't want to read or write from it, we can
+	// proceed with a `shutdown(2)`, which takes care of terminating our
+	// side of the channel.
+	//
+	// By specifying `SHUT_RDWR`, not only furtes receptions are
+	// dissallowed, but transmissions to.
+	ret = shutdown(conn_fd, SHUT_RDWR);
+	if (ret == -1) {
+		perror("shutdown");
+		return -1;
+	}
+
+	// Once the connection got properly terminated, now we can proceed with
+	// actually closing the file descriptor
+	ret = close(conn_fd);
+	if (ret == -1) {
+		perror("close");
+		return -1;
+	}
+
+	return 0;
+}
