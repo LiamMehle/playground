@@ -1,0 +1,7 @@
+set disassembly-flavor intel
+b _main
+define hook-stop
+disassem
+end
+r
+

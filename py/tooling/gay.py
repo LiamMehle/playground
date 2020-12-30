@@ -98,7 +98,7 @@ for i, string in enumerate(sys.argv):
 		print('I\'m gay')
 		quit()
 	for c in string:
-		oprint(convert_char(c), end='')
+		print(convert_char(c), end='')
 	
 	print(' ', end='')
 
